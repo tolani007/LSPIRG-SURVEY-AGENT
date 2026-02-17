@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "description": "Standalone Groq HTTP Request node config for sentiment analysis. Use this if you prefer the raw HTTP approach over n8n's built-in AI nodes."
+  },
+  "node": {
+    "parameters": {
+      "method": "POST",
+      "url": "https://api.groq.com/openai/v1/chat/completions",
+      "authentication": "genericCredentialType",
+      "genericAuthType": "httpHeaderAuth",
+      "sendHeaders": true,
+      "headerParameters": {
+        "parameters": [
+          {
+            "name": "Authorization",
+            "value": "=Bearer {{ $env.GROQ_API_KEY }}"
+          }
+        ]
+      },
+      "sendBody": true,
+      "specifyBody": "json",
+      "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\\n\\nRules:\\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the single word: needs growth\\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this event feedback: \\\"{{ $json.Feedback }}\\\"\"\n    }\n  ],\n  \"temperature\": 0.1,\n  \"max_tokens\": 10\n}",
+      "options": {}
+    },
+    "name": "Groq Sentiment Analysis",
+    "type": "n8n-nodes-base.httpRequest",
+    "typeVersion": 4.2
+  }
+}

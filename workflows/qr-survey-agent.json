@@ -1,0 +1,442 @@
+{
+  "name": "QR Survey Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-survey",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: Generate Survey",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "generate-survey"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate a unique Event ID\nconst eventId = 'EVT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();\nconst eventName = $input.first().json.body?.event_name || 'Event';\nconst formBaseUrl = $input.first().json.body?.form_url || '';\n\n// Build the pre-filled Google Form URL\n// The entry ID for the hidden Event_ID field in your Google Form\nconst formUrl = formBaseUrl \n  ? `${formBaseUrl}?entry.EVENT_ID_FIELD=${encodeURIComponent(eventId)}`\n  : `https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?entry.EVENT_ID_FIELD=${encodeURIComponent(eventId)}`;\n\n// QuickChart QR code URL (free, no API key)\nconst qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(formUrl)}&size=400&dark=6a0dad&format=png`;\n\nreturn [\n  {\n    json: {\n      event_id: eventId,\n      event_name: eventName,\n      form_url: formUrl,\n      qr_url: qrUrl,\n      created_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "id": "generate-ids",
+      "name": "Generate Event ID & URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.qr_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "fetch-qr",
+      "name": "Fetch QR Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"event_id\": \"{{ $('Generate Event ID & URLs').item.json.event_id }}\",\n  \"event_name\": \"{{ $('Generate Event ID & URLs').item.json.event_name }}\",\n  \"form_url\": \"{{ $('Generate Event ID & URLs').item.json.form_url }}\",\n  \"qr_url\": \"{{ $('Generate Event ID & URLs').item.json.qr_url }}\",\n  \"message\": \"Survey QR code generated. The survey will auto-close 5 hours after the first response.\"\n}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond with QR Data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "additionalFields": {
+          "caption": "=📊 Survey ready for: {{ $('Generate Event ID & URLs').item.json.event_name }}\n\n🔗 Form: {{ $('Generate Event ID & URLs').item.json.form_url }}\n🆔 Event: {{ $('Generate Event ID & URLs').item.json.event_id }}\n\nThe form will auto-close 5 hours after the first response.",
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram-send-qr",
+      "name": "Telegram: Send QR",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-cred",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.GOOGLE_SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Form Responses 1"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "sheet-trigger",
+      "name": "Google Sheet: New Response",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [220, 700],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-cred",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\n\nRules:\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the single word: needs growth\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\n\nExamples:\n- \"Great event, loved the speakers!\" → empath\n- \"It was okay but too crowded and disorganized\" → needs growth\n- \"Amazing experience, can't wait for the next one\" → empath\n- \"Waste of my time honestly\" → needs growth\n- \"The food was good\" → empath\n- \"Not what I expected at all\" → needs growth"
+            },
+            {
+              "role": "user",
+              "content": "=Analyze this event feedback: \"{{ $json.Feedback }}\""
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.1,
+          "maxTokens": 10
+        }
+      },
+      "id": "groq-sentiment",
+      "name": "Groq: Sentiment Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 700],
+      "notes": "Uses Groq API directly via HTTP for free LLM inference"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nlet sentiment = 'needs growth'; // default\n\ntry {\n  const content = response.choices[0].message.content.trim().toLowerCase();\n  if (content.includes('empath')) {\n    sentiment = 'empath';\n  } else {\n    sentiment = 'needs growth';\n  }\n} catch (e) {\n  sentiment = 'needs growth';\n}\n\nreturn [\n  {\n    json: {\n      sentiment: sentiment,\n      row_number: $('Google Sheet: New Response').item.json.row_number,\n      feedback: $('Google Sheet: New Response').item.json.Feedback,\n      timestamp: $('Google Sheet: New Response').item.json.Timestamp\n    }\n  }\n];"
+      },
+      "id": "parse-sentiment",
+      "name": "Parse Sentiment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 700]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.GOOGLE_SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Form Responses 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sentiment": "={{ $json.sentiment }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "id": "write-sentiment",
+      "name": "Write Sentiment to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [880, 700],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-cred",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "first-response-check",
+              "leftValue": "={{ $('Google Sheet: New Response').item.json.row_number }}",
+              "rightValue": "2",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-first-response",
+      "name": "Is First Response?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1100, 700]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "hours"
+      },
+      "id": "wait-5-hours",
+      "name": "Wait 5 Hours",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1320, 600]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=close_form&form_id={{ $env.GOOGLE_FORM_ID }}",
+        "options": {}
+      },
+      "id": "close-form",
+      "name": "Close Google Form",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 600]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "export-sheet",
+      "name": "Export Sheet as PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 600]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@survey-agent.local",
+        "toEmail": "={{ $env.NOTIFICATION_EMAIL || 'tolaniakinola@gmail.com' }}",
+        "subject": "=Survey Results - {{ $('Generate Event ID & URLs').item.json.event_name || 'Event' }} - Complete",
+        "emailType": "text",
+        "message": "=The survey for your event has closed after the 5-hour window.\n\nPlease find the results attached as a PDF.\n\nTotal responses are available in your Google Sheet.",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "send-email",
+      "name": "Email Results",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1980, 600]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=✅ Survey CLOSED for event.\n\n📊 Results have been emailed to {{ $env.NOTIFICATION_EMAIL || 'tolaniakinola@gmail.com' }}.\n\nThe Google Form is no longer accepting responses.",
+        "additionalFields": {}
+      },
+      "id": "telegram-notify-close",
+      "name": "Telegram: Survey Closed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2200, 600],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-cred",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook: Generate Survey": {
+      "main": [
+        [
+          {
+            "node": "Generate Event ID & URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Event ID & URLs": {
+      "main": [
+        [
+          {
+            "node": "Fetch QR Image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond with QR Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch QR Image": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Send QR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheet: New Response": {
+      "main": [
+        [
+          {
+            "node": "Groq: Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq: Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Parse Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Write Sentiment to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Sentiment to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Is First Response?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is First Response?": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 Hours",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait 5 Hours": {
+      "main": [
+        [
+          {
+            "node": "Close Google Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close Google Form": {
+      "main": [
+        [
+          {
+            "node": "Export Sheet as PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export Sheet as PDF": {
+      "main": [
+        [
+          {
+            "node": "Email Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Results": {
+      "main": [
+        [
+          {
+            "node": "Telegram: Survey Closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "survey-agent",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "triggerCount": 2,
+  "pinData": {}
+}

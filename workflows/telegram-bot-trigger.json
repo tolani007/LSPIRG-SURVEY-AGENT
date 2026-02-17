@@ -1,0 +1,176 @@
+{
+  "name": "Telegram Survey Bot",
+  "meta": {
+    "description": "Alternative trigger: Use a Telegram bot instead of a webhook to generate surveys on demand. Send /survey EventName to the bot."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-cred",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.first().json.message;\nconst text = message.text || '';\nconst chatId = message.chat.id;\n\n// Parse command: /survey EventName\nconst match = text.match(/^\\/survey\\s+(.+)$/i);\n\nif (!match) {\n  return [\n    {\n      json: {\n        valid: false,\n        chatId: chatId,\n        reply: 'Usage: /survey <Event Name>\\n\\nExample: /survey Annual Tech Conference 2025'\n      }\n    }\n  ];\n}\n\nconst eventName = match[1].trim();\nconst eventId = 'EVT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();\n\n// Replace with your actual Google Form URL\nconst formBaseUrl = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform';\nconst formUrl = `${formBaseUrl}?entry.EVENT_ID_FIELD=${encodeURIComponent(eventId)}`;\nconst qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(formUrl)}&size=400&dark=6a0dad&format=png`;\n\nreturn [\n  {\n    json: {\n      valid: true,\n      chatId: chatId,\n      event_id: eventId,\n      event_name: eventName,\n      form_url: formUrl,\n      qr_url: qrUrl\n    }\n  }\n];"
+      },
+      "id": "parse-command",
+      "name": "Parse /survey Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-valid",
+      "name": "Valid Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [660, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.reply }}",
+        "additionalFields": {}
+      },
+      "id": "send-usage",
+      "name": "Send Usage Help",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 450],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-cred",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.qr_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "fetch-qr-image",
+      "name": "Fetch QR Code",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse /survey Command').item.json.chatId }}",
+        "additionalFields": {
+          "caption": "=Survey ready for: {{ $('Parse /survey Command').item.json.event_name }}\n\nForm: {{ $('Parse /survey Command').item.json.form_url }}\nEvent ID: {{ $('Parse /survey Command').item.json.event_id }}\n\nScan the QR code to submit feedback. The survey auto-closes 5 hours after the first response.",
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "send-qr",
+      "name": "Send QR to Chat",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1100, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-cred",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse /survey Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse /survey Command": {
+      "main": [
+        [
+          {
+            "node": "Valid Command?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Command?": {
+      "main": [
+        [
+          {
+            "node": "Fetch QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Usage Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch QR Code": {
+      "main": [
+        [
+          {
+            "node": "Send QR to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
