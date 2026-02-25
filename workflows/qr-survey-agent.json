@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Generate a unique Event ID\nconst eventId = 'EVT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();\nconst eventName = $input.first().json.body?.event_name || 'Event';\nconst formBaseUrl = $input.first().json.body?.form_url || '';\n\n// Build the pre-filled Google Form URL\n// The entry ID for the hidden Event_ID field in your Google Form\nconst formUrl = formBaseUrl \n  ? `${formBaseUrl}?entry.EVENT_ID_FIELD=${encodeURIComponent(eventId)}`\n  : `https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?entry.EVENT_ID_FIELD=${encodeURIComponent(eventId)}`;\n\n// QuickChart QR code URL (free, no API key)\nconst qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(formUrl)}&size=400&dark=6a0dad&format=png`;\n\nreturn [\n  {\n    json: {\n      event_id: eventId,\n      event_name: eventName,\n      form_url: formUrl,\n      qr_url: qrUrl,\n      created_at: new Date().toISOString()\n    }\n  }\n];"
+        "jsCode": "// Generate a unique Event ID\nconst eventId = 'EVT-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();\nconst eventName = $input.first().json.body?.event_name || 'Event';\n\n// Google Form published URL (anonymous — no sign-in, no email collection)\nconst formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLScv8-HojELcAJh5k86fvMMhIeNQtg7Peqt_ouxmIOuSTD8CSQ/viewform';\n\n// QuickChart QR code URL (free, no API key)\nconst qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(formUrl)}&size=400&dark=6a0dad&format=png`;\n\nreturn [\n  {\n    json: {\n      event_id: eventId,\n      event_name: eventName,\n      form_url: formUrl,\n      qr_url: qrUrl,\n      created_at: new Date().toISOString()\n    }\n  }\n];"
       },
       "id": "generate-ids",
       "name": "Generate Event ID & URLs",
@@ -235,7 +235,7 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=close_form&form_id={{ $env.GOOGLE_FORM_ID }}",
+        "url": "=https://script.google.com/macros/s/AKfycbx8fYQiUoxwO3uavX03qGZsddP-SYGT-G2go7EjwqkFnn1D0C_ekdLLDG4rovpHceDU/exec?action=close_form&form_id=1jyv0OtredNGBJExsT2YjFAEHzL-wjom5AR4WedqwYiw",
         "options": {}
       },
       "id": "close-form",
@@ -246,7 +246,7 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_anonymized&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "url": "=https://script.google.com/macros/s/AKfycbx8fYQiUoxwO3uavX03qGZsddP-SYGT-G2go7EjwqkFnn1D0C_ekdLLDG4rovpHceDU/exec?action=export_anonymized&sheet_id=1fbfAbR7jSC9D8nCFm1C21SHhX03VfuQt8B4mWvroVQo",
         "options": {}
       },
       "id": "anonymize-data",
@@ -258,7 +258,7 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}&anonymized=true",
+        "url": "=https://script.google.com/macros/s/AKfycbx8fYQiUoxwO3uavX03qGZsddP-SYGT-G2go7EjwqkFnn1D0C_ekdLLDG4rovpHceDU/exec?action=export_pdf&sheet_id=1fbfAbR7jSC9D8nCFm1C21SHhX03VfuQt8B4mWvroVQo&anonymized=true",
         "options": {
           "response": {
             "response": {
@@ -292,7 +292,7 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=purge_raw_data&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "url": "=https://script.google.com/macros/s/AKfycbx8fYQiUoxwO3uavX03qGZsddP-SYGT-G2go7EjwqkFnn1D0C_ekdLLDG4rovpHceDU/exec?action=purge_raw_data&sheet_id=1fbfAbR7jSC9D8nCFm1C21SHhX03VfuQt8B4mWvroVQo",
         "options": {}
       },
       "id": "purge-raw",
