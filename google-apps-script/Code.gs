@@ -12,6 +12,10 @@
  *
  * PRIVACY: This script ensures NO attendee identity data
  * (timestamps, emails, IPs, names) reaches the email recipient.
+ *
+ * IMPORTANT: After updating this file, you must create a NEW
+ * deployment in Apps Script (Deploy > New Deployment > Web App)
+ * and update the deployment URL in your n8n workflow.
  */
 
 // ─────────────────────────────────────────────
@@ -19,27 +23,85 @@
 // ─────────────────────────────────────────────
 
 function doGet(e) {
-  var action = e.parameter.action;
+  var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : '';
+
+  if (!action) {
+    return jsonResponse('success', {
+      message: 'QR Survey Agent API is running',
+      version: '2.0.0-privacy',
+      available_actions: [
+        'close_form (requires: form_id)',
+        'export_anonymized (requires: sheet_id)',
+        'export_pdf (requires: sheet_id, optional: anonymized=true)',
+        'purge_raw_data (requires: sheet_id)',
+        'setup_formatting (requires: sheet_id)'
+      ]
+    });
+  }
 
   if (action === 'close_form') {
-    return closeForm(e.parameter.form_id);
+    var formId = e.parameter.form_id;
+    if (!formId) {
+      return jsonError('Missing required parameter: form_id');
+    }
+    return closeForm(formId);
+
   } else if (action === 'export_anonymized') {
-    return anonymizeSheet(e.parameter.sheet_id);
+    var sheetId = e.parameter.sheet_id;
+    if (!sheetId) {
+      return jsonError('Missing required parameter: sheet_id');
+    }
+    return anonymizeSheet(sheetId);
+
   } else if (action === 'export_pdf') {
+    var sheetId = e.parameter.sheet_id;
+    if (!sheetId) {
+      return jsonError('Missing required parameter: sheet_id');
+    }
     var anonymized = e.parameter.anonymized === 'true';
-    return exportSheetAsPdf(e.parameter.sheet_id, anonymized);
+    return exportSheetAsPdf(sheetId, anonymized);
+
   } else if (action === 'purge_raw_data') {
-    return purgeRawData(e.parameter.sheet_id);
+    var sheetId = e.parameter.sheet_id;
+    if (!sheetId) {
+      return jsonError('Missing required parameter: sheet_id');
+    }
+    return purgeRawData(sheetId);
+
   } else if (action === 'setup_formatting') {
-    return setupConditionalFormatting(e.parameter.sheet_id);
+    var sheetId = e.parameter.sheet_id;
+    if (!sheetId) {
+      return jsonError('Missing required parameter: sheet_id');
+    }
+    return setupConditionalFormatting(sheetId);
+
   } else {
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'error',
-        message: 'Unknown action. Use: close_form, export_anonymized, export_pdf, purge_raw_data, setup_formatting'
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonError(
+      'Unknown action: "' + action + '". Valid actions: close_form, export_anonymized, export_pdf, purge_raw_data, setup_formatting'
+    );
   }
+}
+
+// ─────────────────────────────────────────────
+// JSON Response Helpers
+// ─────────────────────────────────────────────
+
+function jsonResponse(status, data) {
+  var payload = { status: status };
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      payload[key] = data[key];
+    }
+  }
+  return ContentService.createTextOutput(
+    JSON.stringify(payload)
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function jsonError(message) {
+  return ContentService.createTextOutput(
+    JSON.stringify({ status: 'error', message: message })
+  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 // ─────────────────────────────────────────────
@@ -54,18 +116,17 @@ function closeForm(formId) {
       'Thank you for your interest! This survey has closed. We appreciate your feedback.'
     );
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'success',
-        message: 'Form closed successfully',
-        form_id: formId,
-        closed_at: new Date().toISOString()
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse('success', {
+      message: 'Form closed successfully',
+      form_id: formId,
+      closed_at: new Date().toISOString()
+    });
   } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: err.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    var msg = err.toString();
+    if (msg.indexOf('No item with the given ID') >= 0) {
+      return jsonError('Form not found. Check that form_id "' + formId + '" is the Form ID (not the published URL ID). Find it at: docs.google.com/forms/d/{THIS_IS_THE_ID}/edit');
+    }
+    return jsonError('closeForm failed: ' + msg);
   }
 }
 
@@ -80,13 +141,11 @@ function closeForm(formId) {
 
 function anonymizeSheet(sheetId) {
   try {
-    var spreadsheet = SpreadsheetApp.openById(sheetId);
+    var spreadsheet = openSpreadsheet(sheetId);
     var source = spreadsheet.getSheetByName('Form Responses 1');
 
     if (!source) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'error', message: 'Source sheet "Form Responses 1" not found' })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return jsonError('Source sheet "Form Responses 1" not found in spreadsheet. Make sure your Google Form is linked to this sheet.');
     }
 
     // Delete existing anonymized sheet if it exists
@@ -128,24 +187,25 @@ function anonymizeSheet(sheetId) {
 
     var lastRow = source.getLastRow();
     if (lastRow < 2) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'success', message: 'No responses to anonymize', rows: 0 })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse('success', {
+        message: 'No responses to anonymize',
+        rows: 0
+      });
     }
 
     var data = source.getRange(2, 1, lastRow - 1, source.getLastColumn()).getValues();
 
+    // Batch write for performance: build all values first, then write at once
+    var outputData = [];
     for (var r = 0; r < data.length; r++) {
-      var responseNum = r + 1;
       var rawFeedback = data[r][feedbackCol] ? data[r][feedbackCol].toString() : '';
       var sentiment = (sentimentCol >= 0 && data[r][sentimentCol]) ? data[r][sentimentCol].toString() : '';
-
-      // Scrub any remaining PII from feedback
       var cleanFeedback = scrubPII(rawFeedback);
+      outputData.push(['R-' + (r + 1), cleanFeedback, sentiment]);
+    }
 
-      anonSheet.getRange(r + 2, 1).setValue('R-' + responseNum);
-      anonSheet.getRange(r + 2, 2).setValue(cleanFeedback);
-      anonSheet.getRange(r + 2, 3).setValue(sentiment);
+    if (outputData.length > 0) {
+      anonSheet.getRange(2, 1, outputData.length, 3).setValues(outputData);
     }
 
     // Apply conditional formatting to anonymized sheet
@@ -154,18 +214,13 @@ function anonymizeSheet(sheetId) {
     // Auto-resize columns
     anonSheet.autoResizeColumns(1, 3);
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'success',
-        message: 'Sheet anonymized successfully',
-        rows_processed: data.length,
-        columns: ['Response #', 'Feedback', 'Sentiment']
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse('success', {
+      message: 'Sheet anonymized successfully',
+      rows_processed: outputData.length,
+      columns: ['Response #', 'Feedback', 'Sentiment']
+    });
   } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: err.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonError('anonymizeSheet failed: ' + err.toString());
   }
 }
 
@@ -211,14 +266,15 @@ function scrubPII(text) {
 
 function exportSheetAsPdf(sheetId, anonymized) {
   try {
-    var spreadsheet = SpreadsheetApp.openById(sheetId);
+    var spreadsheet = openSpreadsheet(sheetId);
     var sheetName = anonymized ? 'Anonymized Results' : 'Form Responses 1';
     var sheet = spreadsheet.getSheetByName(sheetName);
 
     if (!sheet) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'error', message: 'Sheet "' + sheetName + '" not found. Run export_anonymized first.' })
-      ).setMimeType(ContentService.MimeType.JSON);
+      var hint = anonymized
+        ? 'Run the export_anonymized action first to create the anonymized sheet.'
+        : 'Make sure your Google Form is linked to this spreadsheet.';
+      return jsonError('Sheet "' + sheetName + '" not found. ' + hint);
     }
 
     // Build PDF export URL
@@ -257,19 +313,14 @@ function exportSheetAsPdf(sheetId, anonymized) {
     var file = DriveApp.createFile(pdfBlob);
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'success',
-        pdf_url: file.getUrl(),
-        download_url: 'https://drive.google.com/uc?export=download&id=' + file.getId(),
-        file_name: fileName,
-        anonymized: anonymized
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse('success', {
+      pdf_url: file.getUrl(),
+      download_url: 'https://drive.google.com/uc?export=download&id=' + file.getId(),
+      file_name: fileName,
+      anonymized: anonymized
+    });
   } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: err.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonError('exportSheetAsPdf failed: ' + err.toString());
   }
 }
 
@@ -282,20 +333,20 @@ function exportSheetAsPdf(sheetId, anonymized) {
 
 function purgeRawData(sheetId) {
   try {
-    var spreadsheet = SpreadsheetApp.openById(sheetId);
+    var spreadsheet = openSpreadsheet(sheetId);
     var source = spreadsheet.getSheetByName('Form Responses 1');
 
     if (!source) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'success', message: 'No raw data sheet found' })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse('success', {
+        message: 'No raw data sheet found (may already be purged)'
+      });
     }
 
     var lastRow = source.getLastRow();
     if (lastRow < 2) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'success', message: 'No data rows to purge' })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse('success', {
+        message: 'No data rows to purge'
+      });
     }
 
     // Clear all data rows (keep headers)
@@ -306,18 +357,13 @@ function purgeRawData(sheetId) {
     source.getRange(2, 1).setValue('DATA PURGED');
     source.getRange(2, 2).setValue('Raw response data was purged after anonymized export on ' + new Date().toISOString());
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'success',
-        message: 'Raw response data purged',
-        rows_purged: lastRow - 1,
-        purged_at: new Date().toISOString()
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse('success', {
+      message: 'Raw response data purged',
+      rows_purged: lastRow - 1,
+      purged_at: new Date().toISOString()
+    });
   } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: err.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonError('purgeRawData failed: ' + err.toString());
   }
 }
 
@@ -327,30 +373,43 @@ function purgeRawData(sheetId) {
 
 function setupConditionalFormatting(sheetId) {
   try {
-    var spreadsheet = SpreadsheetApp.openById(sheetId);
+    var spreadsheet = openSpreadsheet(sheetId);
     var sheet = spreadsheet.getSheetByName('Form Responses 1');
+
+    if (!sheet) {
+      return jsonError('"Form Responses 1" sheet not found. Link a Google Form to this spreadsheet first.');
+    }
 
     var sentimentCol = findColumnByHeader(sheet, 'Sentiment');
     if (sentimentCol === -1) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ status: 'error', message: 'Sentiment column not found' })
-      ).setMimeType(ContentService.MimeType.JSON);
+      return jsonError('Sentiment column not found. Add a column header named "Sentiment" to your sheet first.');
     }
 
     applyFormattingToSheet(sheet, sentimentCol);
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        status: 'success',
-        message: 'Conditional formatting applied',
-        sentiment_column: sentimentCol,
-        rules_applied: ['empath -> Purple/White', 'needs growth -> Lime-Green/Black']
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse('success', {
+      message: 'Conditional formatting applied',
+      sentiment_column: sentimentCol,
+      rules_applied: ['empath -> Purple/White', 'needs growth -> Lime-Green/Black']
+    });
   } catch (err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ status: 'error', message: err.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    return jsonError('setupConditionalFormatting failed: ' + err.toString());
+  }
+}
+
+// ─────────────────────────────────────────────
+// Helper: Open spreadsheet with clear error
+// ─────────────────────────────────────────────
+
+function openSpreadsheet(sheetId) {
+  try {
+    return SpreadsheetApp.openById(sheetId);
+  } catch (err) {
+    throw new Error(
+      'Cannot open spreadsheet with ID "' + sheetId + '". ' +
+      'Check that the sheet_id is correct (find it in the URL: docs.google.com/spreadsheets/d/{THIS_IS_THE_ID}/edit) ' +
+      'and that the Apps Script owner has edit access to the spreadsheet.'
+    );
   }
 }
 
