@@ -1,11 +1,13 @@
 # QR Survey Agent
 
-Automated agentic workflow that generates QR-coded event surveys with AI-powered sentiment analysis, auto-close after 5 hours, and email delivery of results.
+Automated agentic workflow that generates QR-coded event surveys with AI-powered sentiment analysis, auto-close after 5 hours, and email delivery of anonymized results.
+
+**Zero respondent data leaves the system.** All attendees are anonymous.
 
 ## Architecture
 
 ```
-Telegram Bot / Webhook
+User Trigger (Webhook / Telegram)
         |
         v
    ┌─────────┐     ┌──────────────┐     ┌─────────┐
@@ -15,17 +17,49 @@ Telegram Bot / Webhook
         |
         v  (Google Form response arrives)
    ┌─────────┐     ┌──────────────┐     ┌──────────────┐
-   │ Google   │────>│ Groq LLM    │────>│ Google Sheet  │
-   │ Sheets   │     │ (sentiment)  │     │ (write result)│
-   │ Trigger  │     └──────────────┘     └──────┬───────┘
-   └─────────┘                                  |
-                                                 v
-                                    ┌────────────────────┐
-                                    │ 5-Hour Kill Switch  │
-                                    │ (Wait node → Close  │
-                                    │  Form → PDF Export  │
-                                    │  → Email results)   │
-                                    └────────────────────┘
+   │ Google   │────>│ PII Scrubber │────>│ Groq LLM     │
+   │ Sheets   │     │ (strip all   │     │ (sentiment    │
+   │ Trigger  │     │  identity)   │     │  on clean     │
+   └─────────┘     └──────────────┘     │  text only)   │
+                                         └──────┬───────┘
+                                                |
+                                                v
+                                   ┌────────────────────────┐
+                                   │ 5-Hour Kill Switch      │
+                                   │ Close Form              │
+                                   │ → Anonymize Sheet       │
+                                   │ → Export Anonymized PDF │
+                                   │ → Email Results         │
+                                   │ → Purge Raw Data        │
+                                   └────────────────────────┘
+```
+
+## Privacy & Anonymity
+
+This system is built with **defense-in-depth anonymity**. No respondent can be traced back to their identity, location, or device.
+
+### Anonymity Guarantees
+
+| Layer | What It Does |
+|-------|-------------|
+| Google Form Config | No email collection, no sign-in required, no "Respondent URL" tracking |
+| PII Scrubber (n8n) | Strips emails, phones, URLs, IPs, social handles, names, zip codes from feedback BEFORE it reaches any API |
+| PII Scrubber (Apps Script) | Second scrub pass before PDF export (defense-in-depth) |
+| Anonymized Export | Creates separate sheet with only: Response #, Feedback, Sentiment. No Timestamps. |
+| Raw Data Purge | After export, all raw response data is deleted from Google Sheets |
+| LLM Privacy | Groq only sees sanitized text. System prompt forbids echoing feedback. |
+| Email Recipient | Receives ONLY the anonymized PDF. No Timestamps, no emails, no IPs. |
+
+### What Gets Redacted
+
+```
+Emails:        john@example.com         → [REDACTED]
+Phones:        +1 (555) 123-4567        → [REDACTED]
+URLs:          https://mysite.com/page   → [REDACTED]
+IPs:           192.168.1.100            → [REDACTED]
+Social:        @johndoe                 → [REDACTED]
+Self-ID:       "My name is John Smith"  → [REDACTED]
+Zip codes:     90210                    → [REDACTED]
 ```
 
 ## Cost Breakdown
@@ -44,12 +78,12 @@ If you need cloud hosting for n8n: Railway.app free tier or a $5/mo VPS.
 ## Stack
 
 - **Orchestrator**: n8n (self-hosted via Docker)
-- **Survey**: Google Forms (one question, pre-filled Event ID)
-- **Database**: Google Sheets (Timestamp, Feedback, Sentiment)
+- **Survey**: Google Forms (one question, no sign-in, no email collection)
+- **Database**: Google Sheets (anonymized before export)
 - **LLM**: Groq API (llama-3.1-8b-instant, free tier)
 - **QR Generator**: QuickChart.io (free, no auth)
 - **Trigger**: Telegram Bot or Webhook
-- **Form Control**: Google Apps Script (close form, export PDF)
+- **Form Control**: Google Apps Script (close, anonymize, export, purge)
 
 ## Project Structure
 
@@ -58,11 +92,11 @@ LSPIRG-SURVEY-AGENT/
 ├── docker-compose.yml              # n8n container
 ├── .env.example                    # Environment variables template
 ├── workflows/
-│   ├── qr-survey-agent.json        # Main n8n workflow
+│   ├── qr-survey-agent.json        # Main n8n workflow (with PII scrubber)
 │   ├── telegram-bot-trigger.json   # Telegram bot trigger workflow
 │   └── groq-sentiment-node.json    # Standalone Groq HTTP config
 ├── google-apps-script/
-│   └── Code.gs                     # Apps Script for form close + PDF export
+│   └── Code.gs                     # Apps Script: close, anonymize, export, purge
 ├── scripts/
 │   ├── setup.sh                    # One-command setup
 │   └── test-workflow.sh            # Test the webhook
@@ -77,16 +111,25 @@ LSPIRG-SURVEY-AGENT/
 - Google account
 - Telegram account (optional, for bot trigger)
 
-### Step 1: Google Form
+### Step 1: Google Form (Privacy-Hardened)
 
 1. Go to [Google Forms](https://forms.google.com) and create a new form
 2. Add **one question**: "How was the event? Would you come back?" (Paragraph type)
-3. Add a **hidden field** for Event ID (Short answer, in a section or as question 2)
-4. Link the form to a **new Google Sheet** (Responses tab > Spreadsheet icon)
-5. In the Sheet, add a column header **Sentiment** in column C (or after the last form column)
-6. Note the **Form ID** (from the URL: `docs.google.com/forms/d/{FORM_ID}/edit`)
-7. Note the **Sheet ID** (from the URL: `docs.google.com/spreadsheets/d/{SHEET_ID}/edit`)
-8. Note the **pre-fill entry ID**: Open the form, click the 3 dots > "Get pre-filled link", fill in the Event ID field, click "Get link". The URL will contain `entry.XXXXXXX=` - that's your entry field ID.
+3. Add a **hidden field** for Event ID (Short answer, as question 2)
+4. **CRITICAL PRIVACY SETTINGS** (click the gear icon):
+   - General tab:
+     - UNCHECK "Collect email addresses"
+     - UNCHECK "Limit to 1 response" (requires sign-in)
+   - Presentation tab:
+     - UNCHECK "Show link to submit another response"
+   - Defaults tab:
+     - UNCHECK "Collect email addresses by default"
+5. In the form's 3-dot menu, ensure "Require sign-in" is **OFF**
+6. Link the form to a **new Google Sheet** (Responses tab > Spreadsheet icon)
+7. In the Sheet, add a column header **Sentiment** after the last form column
+8. Note the **Form ID** (from the URL: `docs.google.com/forms/d/{FORM_ID}/edit`)
+9. Note the **Sheet ID** (from the URL: `docs.google.com/spreadsheets/d/{SHEET_ID}/edit`)
+10. Note the **pre-fill entry ID**: Open form > 3 dots > "Get pre-filled link" > fill Event ID field > "Get link". The URL contains `entry.XXXXXXX=`
 
 ### Step 2: Google Apps Script
 
@@ -98,7 +141,6 @@ LSPIRG-SURVEY-AGENT/
    - Who has access: **Anyone**
 5. Copy the deployment URL
 6. Test: visit `{DEPLOYMENT_URL}?action=setup_formatting&sheet_id={YOUR_SHEET_ID}`
-   - This applies the purple/lime-green conditional formatting automatically
 
 ### Step 3: Groq API Key
 
@@ -164,17 +206,20 @@ cp .env.example .env
 1. Someone scans the QR code, opens the Google Form, submits feedback
 2. The response lands in the linked Google Sheet
 3. n8n detects the new row (polling trigger)
-4. Sends the feedback text to Groq (llama-3.1-8b-instant) with the sentiment prompt
-5. LLM returns either `empath` or `needs growth`
-6. Result is written to the Sentiment column in the Sheet
-7. Conditional formatting auto-colors: **Purple** = empath, **Lime-Green** = needs growth
+4. **PII Scrubber** strips all personally identifiable info from the feedback text
+5. Sanitized text is sent to Groq (llama-3.1-8b-instant) with the sentiment prompt
+6. LLM returns either `empath` or `needs growth`
+7. Result is written to the Sentiment column in the Sheet
+8. Conditional formatting auto-colors: **Purple** = empath, **Lime-Green** = needs growth
 
-### Phase 3: Kill Switch (5-hour window)
+### Phase 3: Kill Switch & Anonymized Export (5-hour window)
 1. When the **first** response arrives (row 2), n8n starts a 5-hour timer
 2. After 5 hours:
-   - Calls Google Apps Script to **close the form** (no more responses)
-   - Exports the Sheet as **PDF**
-   - **Emails** the PDF to `tolaniakinola@gmail.com`
+   - **Closes** the Google Form (no more responses)
+   - **Anonymizes** the data (creates clean sheet with no Timestamps/PII)
+   - **Exports** the anonymized sheet as PDF
+   - **Emails** the anonymized PDF to the configured address
+   - **Purges** all raw response data from the original sheet
    - Sends a **Telegram notification** confirming closure
 
 ## Sentiment Prompt
@@ -188,6 +233,7 @@ Rules:
 - If positive → output ONLY: empath
 - If negative → output ONLY: needs growth
 - No explanation. No punctuation. Just one phrase.
+- NEVER echo back or reference any part of the user's feedback text.
 ```
 
 ## Conditional Formatting
@@ -210,6 +256,10 @@ Format > Conditional formatting > Add rules on the Sentiment column.
 - [x] Google Apps Script: form close + PDF export + formatting
 - [x] 5-hour kill switch with Wait node
 - [x] Email delivery of results
+- [x] PII scrubbing layer (n8n Code node)
+- [x] Anonymized sheet export (Apps Script)
+- [x] Raw data purge after export
+- [x] Privacy-hardened Google Form setup guide
 - [ ] Deploy and end-to-end test
 
 ### Sprint 2 (Backlog)
@@ -230,6 +280,8 @@ Format > Conditional formatting > Add rules on the Sentiment column.
 **Form won't close**: Make sure the Apps Script is deployed as a Web App with "Anyone" access, and the Form ID is correct.
 
 **QR code not generating**: QuickChart.io is free and usually reliable. Test the URL directly in a browser: `https://quickchart.io/qr?text=hello&size=300`
+
+**Anonymized sheet missing**: The `export_anonymized` action must be called before `export_pdf?anonymized=true`. The main workflow handles this automatically.
 
 ## License
 

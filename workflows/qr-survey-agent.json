@@ -59,7 +59,7 @@
       "parameters": {
         "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
         "additionalFields": {
-          "caption": "=📊 Survey ready for: {{ $('Generate Event ID & URLs').item.json.event_name }}\n\n🔗 Form: {{ $('Generate Event ID & URLs').item.json.form_url }}\n🆔 Event: {{ $('Generate Event ID & URLs').item.json.event_id }}\n\nThe form will auto-close 5 hours after the first response.",
+          "caption": "=Survey ready for: {{ $('Generate Event ID & URLs').item.json.event_name }}\n\nEvent: {{ $('Generate Event ID & URLs').item.json.event_id }}\n\nThe form will auto-close 5 hours after the first response.",
           "parse_mode": "Markdown"
         }
       },
@@ -111,40 +111,53 @@
     },
     {
       "parameters": {
-        "model": "llama-3.1-8b-instant",
-        "messages": {
-          "values": [
+        "jsCode": "// ──────────────────────────────────────────\n// PII Scrubbing Layer (Privacy Shield)\n// Strips all personally identifiable information\n// from feedback text BEFORE it reaches the LLM\n// or gets stored in any readable form.\n// ──────────────────────────────────────────\n\nconst input = $input.first().json;\nlet feedback = (input.Feedback || input.feedback || '').toString();\n\n// 1. Strip email addresses\nfeedback = feedback.replace(/[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}/g, '[REDACTED]');\n\n// 2. Strip phone numbers (various formats)\nfeedback = feedback.replace(/(\\+?\\d{1,3}[\\s\\-]?)?\\(?\\d{2,4}\\)?[\\s\\-]?\\d{3,4}[\\s\\-]?\\d{3,4}/g, '[REDACTED]');\n\n// 3. Strip URLs that may contain tracking params\nfeedback = feedback.replace(/https?:\\/\\/[^\\s]+/g, '[REDACTED]');\n\n// 4. Strip IP addresses\nfeedback = feedback.replace(/\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b/g, '[REDACTED]');\n\n// 5. Strip social media handles (@username)\nfeedback = feedback.replace(/@[a-zA-Z0-9_]{2,}/g, '[REDACTED]');\n\n// 6. Strip common name patterns prefixed with identifying phrases\nfeedback = feedback.replace(/(?:my name is|i'm|i am|call me|this is)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?/gi, '[REDACTED]');\n\n// 7. Strip postal/zip codes\nfeedback = feedback.replace(/\\b\\d{5}(?:-\\d{4})?\\b/g, '[REDACTED]');\n\n// 8. Clean up multiple consecutive [REDACTED] tags\nfeedback = feedback.replace(/(\\[REDACTED\\]\\s*){2,}/g, '[REDACTED] ');\n\n// Generate anonymous response ID (no link to original row timing)\nconst anonId = 'R-' + Math.random().toString(36).substring(2, 8).toUpperCase();\n\nreturn [\n  {\n    json: {\n      anonymous_id: anonId,\n      feedback_sanitized: feedback.trim(),\n      row_number: input.row_number,\n      // DO NOT pass through: Timestamp, email, IP, or any other identifier\n    }\n  }\n];"
+      },
+      "id": "pii-scrub",
+      "name": "PII Scrubber (Privacy Shield)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 700],
+      "notes": "Strips emails, phone numbers, URLs, IPs, social handles, self-identification phrases, and zip codes from feedback text before it reaches any external API or storage."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "role": "system",
-              "content": "You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\n\nRules:\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the single word: needs growth\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\n\nExamples:\n- \"Great event, loved the speakers!\" → empath\n- \"It was okay but too crowded and disorganized\" → needs growth\n- \"Amazing experience, can't wait for the next one\" → empath\n- \"Waste of my time honestly\" → needs growth\n- \"The food was good\" → empath\n- \"Not what I expected at all\" → needs growth"
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.GROQ_API_KEY }}"
             },
             {
-              "role": "user",
-              "content": "=Analyze this event feedback: \"{{ $json.Feedback }}\""
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
-        "options": {
-          "temperature": 0.1,
-          "maxTokens": 10
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\\n\\nRules:\\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the phrase: needs growth\\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\\n- NEVER echo back or reference any part of the user's feedback text.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this event feedback: \\\"{{ $json.feedback_sanitized }}\\\"\"\n    }\n  ],\n  \"temperature\": 0.1,\n  \"max_tokens\": 10\n}",
+        "options": {}
       },
       "id": "groq-sentiment",
       "name": "Groq: Sentiment Analysis",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [440, 700],
-      "notes": "Uses Groq API directly via HTTP for free LLM inference"
+      "position": [660, 700],
+      "notes": "Receives ONLY sanitized feedback (PII already stripped). Uses Groq free tier with llama-3.1-8b-instant."
     },
     {
       "parameters": {
-        "jsCode": "const response = $input.first().json;\nlet sentiment = 'needs growth'; // default\n\ntry {\n  const content = response.choices[0].message.content.trim().toLowerCase();\n  if (content.includes('empath')) {\n    sentiment = 'empath';\n  } else {\n    sentiment = 'needs growth';\n  }\n} catch (e) {\n  sentiment = 'needs growth';\n}\n\nreturn [\n  {\n    json: {\n      sentiment: sentiment,\n      row_number: $('Google Sheet: New Response').item.json.row_number,\n      feedback: $('Google Sheet: New Response').item.json.Feedback,\n      timestamp: $('Google Sheet: New Response').item.json.Timestamp\n    }\n  }\n];"
+        "jsCode": "const response = $input.first().json;\nlet sentiment = 'needs growth'; // default\n\ntry {\n  const content = response.choices[0].message.content.trim().toLowerCase();\n  if (content.includes('empath')) {\n    sentiment = 'empath';\n  } else {\n    sentiment = 'needs growth';\n  }\n} catch (e) {\n  sentiment = 'needs growth';\n}\n\nreturn [\n  {\n    json: {\n      sentiment: sentiment,\n      anonymous_id: $('PII Scrubber (Privacy Shield)').item.json.anonymous_id,\n      feedback_sanitized: $('PII Scrubber (Privacy Shield)').item.json.feedback_sanitized,\n      row_number: $('PII Scrubber (Privacy Shield)').item.json.row_number\n    }\n  }\n];"
       },
       "id": "parse-sentiment",
       "name": "Parse Sentiment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 700]
+      "position": [880, 700]
     },
     {
       "parameters": {
@@ -172,7 +185,7 @@
       "name": "Write Sentiment to Sheet",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [880, 700],
+      "position": [1100, 700],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "google-cred",
@@ -191,7 +204,7 @@
           "conditions": [
             {
               "id": "first-response-check",
-              "leftValue": "={{ $('Google Sheet: New Response').item.json.row_number }}",
+              "leftValue": "={{ $('PII Scrubber (Privacy Shield)').item.json.row_number }}",
               "rightValue": "2",
               "operator": {
                 "type": "number",
@@ -207,7 +220,7 @@
       "name": "Is First Response?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1100, 700]
+      "position": [1320, 700]
     },
     {
       "parameters": {
@@ -218,7 +231,7 @@
       "name": "Wait 5 Hours",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [1320, 600]
+      "position": [1540, 600]
     },
     {
       "parameters": {
@@ -229,11 +242,23 @@
       "name": "Close Google Form",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1540, 600]
+      "position": [1760, 600]
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_anonymized&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "options": {}
+      },
+      "id": "anonymize-data",
+      "name": "Anonymize & Strip Identifiers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1980, 600],
+      "notes": "Calls Apps Script to create an anonymized copy of the sheet (strips Timestamps, replaces row IDs with anonymous IDs, removes any PII columns) before PDF export."
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}&anonymized=true",
         "options": {
           "response": {
             "response": {
@@ -243,39 +268,51 @@
         }
       },
       "id": "export-sheet",
-      "name": "Export Sheet as PDF",
+      "name": "Export Anonymized PDF",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1760, 600]
+      "position": [2200, 600]
     },
     {
       "parameters": {
         "fromEmail": "noreply@survey-agent.local",
         "toEmail": "={{ $env.NOTIFICATION_EMAIL || 'tolaniakinola@gmail.com' }}",
-        "subject": "=Survey Results - {{ $('Generate Event ID & URLs').item.json.event_name || 'Event' }} - Complete",
+        "subject": "=Survey Results - Event Complete (Anonymized)",
         "emailType": "text",
-        "message": "=The survey for your event has closed after the 5-hour window.\n\nPlease find the results attached as a PDF.\n\nTotal responses are available in your Google Sheet.",
+        "message": "=The survey for your event has closed after the 5-hour window.\n\nPlease find the anonymized results attached as a PDF.\n\nNote: All respondent data has been anonymized. Timestamps, IP addresses,\nemail addresses, and any personally identifiable information have been\nstripped from this report. Respondents are identified only by anonymous\nIDs (e.g., R-A1B2C3).",
         "options": {
           "attachments": "data"
         }
       },
       "id": "send-email",
-      "name": "Email Results",
+      "name": "Email Anonymized Results",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [1980, 600]
+      "position": [2420, 600]
+    },
+    {
+      "parameters": {
+        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=purge_raw_data&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "options": {}
+      },
+      "id": "purge-raw",
+      "name": "Purge Raw Response Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2640, 600],
+      "notes": "After email is sent, purge the raw response data from the original sheet. Only the anonymized sentiment results remain."
     },
     {
       "parameters": {
         "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "=✅ Survey CLOSED for event.\n\n📊 Results have been emailed to {{ $env.NOTIFICATION_EMAIL || 'tolaniakinola@gmail.com' }}.\n\nThe Google Form is no longer accepting responses.",
+        "text": "=Survey CLOSED.\n\nAnonymized results emailed to {{ $env.NOTIFICATION_EMAIL || 'tolaniakinola@gmail.com' }}.\nRaw response data has been purged.\n\nThe Google Form is no longer accepting responses.",
         "additionalFields": {}
       },
       "id": "telegram-notify-close",
       "name": "Telegram: Survey Closed",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [2200, 600],
+      "position": [2860, 600],
       "credentials": {
         "telegramApi": {
           "id": "telegram-cred",
@@ -324,6 +361,17 @@
       ]
     },
     "Google Sheet: New Response": {
+      "main": [
+        [
+          {
+            "node": "PII Scrubber (Privacy Shield)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PII Scrubber (Privacy Shield)": {
       "main": [
         [
           {
@@ -394,25 +442,47 @@
       "main": [
         [
           {
-            "node": "Export Sheet as PDF",
+            "node": "Anonymize & Strip Identifiers",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Export Sheet as PDF": {
+    "Anonymize & Strip Identifiers": {
       "main": [
         [
           {
-            "node": "Email Results",
+            "node": "Export Anonymized PDF",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Email Results": {
+    "Export Anonymized PDF": {
+      "main": [
+        [
+          {
+            "node": "Email Anonymized Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Anonymized Results": {
+      "main": [
+        [
+          {
+            "node": "Purge Raw Response Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Purge Raw Response Data": {
       "main": [
         [
           {

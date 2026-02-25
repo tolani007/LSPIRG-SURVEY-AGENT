@@ -100,7 +100,7 @@
       "parameters": {
         "chatId": "={{ $('Parse /survey Command').item.json.chatId }}",
         "additionalFields": {
-          "caption": "=Survey ready for: {{ $('Parse /survey Command').item.json.event_name }}\n\nForm: {{ $('Parse /survey Command').item.json.form_url }}\nEvent ID: {{ $('Parse /survey Command').item.json.event_id }}\n\nScan the QR code to submit feedback. The survey auto-closes 5 hours after the first response.",
+          "caption": "=Survey ready for: {{ $('Parse /survey Command').item.json.event_name }}\n\nEvent ID: {{ $('Parse /survey Command').item.json.event_id }}\n\nScan the QR code to submit anonymous feedback.\nThe survey auto-closes 5 hours after the first response.",
           "parse_mode": "Markdown"
         }
       },
