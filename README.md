@@ -139,10 +139,9 @@ cp .env.example .env
    - Go to Workflows > Import from File
    - Import `workflows/qr-survey-agent.json`
    - Import `workflows/telegram-bot-trigger.json`
-4. **Update placeholders** in each workflow:
-   - Replace `YOUR_FORM_ID` with your Google Form ID
-   - Replace `EVENT_ID_FIELD` with your form's entry field ID
-   - The Apps Script deployment URL is already configured in the main workflow
+4. **Update placeholder** in each workflow:
+   - Replace `EVENT_ID_FIELD` with your form's pre-fill entry field ID
+   - The Form ID and Apps Script deployment URL are already configured
 5. **Activate** both workflows
 
 ### Step 7: Test
