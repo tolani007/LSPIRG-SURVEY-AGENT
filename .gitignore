@@ -6,3 +6,4 @@ n8n_data/
 credentials/
 *.pem
 *.key
+.env.example
