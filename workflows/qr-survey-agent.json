@@ -111,23 +111,25 @@
     },
     {
       "parameters": {
-        "model": "llama-3.1-8b-instant",
-        "messages": {
-          "values": [
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "role": "system",
-              "content": "You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\n\nRules:\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the single word: needs growth\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\n\nExamples:\n- \"Great event, loved the speakers!\" → empath\n- \"It was okay but too crowded and disorganized\" → needs growth\n- \"Amazing experience, can't wait for the next one\" → empath\n- \"Waste of my time honestly\" → needs growth\n- \"The food was good\" → empath\n- \"Not what I expected at all\" → needs growth"
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.GROQ_API_KEY }}"
             },
             {
-              "role": "user",
-              "content": "=Analyze this event feedback: \"{{ $json.Feedback }}\""
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
-        "options": {
-          "temperature": 0.1,
-          "maxTokens": 10
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a sentiment analysis engine for event feedback. Your job is to determine if an attendee is likely to return to future events based on their feedback.\\n\\nRules:\\n- If the feedback indicates positive experience, satisfaction, enthusiasm, or likelihood of returning, output ONLY the single word: empath\\n- If the feedback indicates dissatisfaction, complaints, unlikely to return, or negative experience, output ONLY the single word: needs growth\\n- Do NOT output anything else. No explanation. No punctuation. Just one of the two phrases.\\n\\nExamples:\\n- \\\"Great event, loved the speakers!\\\" → empath\\n- \\\"It was okay but too crowded and disorganized\\\" → needs growth\\n- \\\"Amazing experience, can't wait for the next one\\\" → empath\\n- \\\"Waste of my time honestly\\\" → needs growth\\n- \\\"The food was good\\\" → empath\\n- \\\"Not what I expected at all\\\" → needs growth\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this event feedback: \\\"{{ $json.Feedback }}\\\"\"\n    }\n  ],\n  \"temperature\": 0.1,\n  \"max_tokens\": 10\n}",
+        "options": {}
       },
       "id": "groq-sentiment",
       "name": "Groq: Sentiment Analysis",
@@ -222,7 +224,7 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=close_form&form_id={{ $env.GOOGLE_FORM_ID }}",
+        "url": "=https://script.google.com/macros/s/AKfycbwQlnKRG_u9arMLh9CwWjWDduIGxZW5bU2GoHNXO2VSRqhylotl6KUAk8Oqdu14i29q/exec?action=close_form&form_id={{ $env.GOOGLE_FORM_ID }}",
         "options": {}
       },
       "id": "close-form",
@@ -233,14 +235,8 @@
     },
     {
       "parameters": {
-        "url": "=https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "file"
-            }
-          }
-        }
+        "url": "=https://script.google.com/macros/s/AKfycbwQlnKRG_u9arMLh9CwWjWDduIGxZW5bU2GoHNXO2VSRqhylotl6KUAk8Oqdu14i29q/exec?action=export_pdf&sheet_id={{ $env.GOOGLE_SHEET_ID }}",
+        "options": {}
       },
       "id": "export-sheet",
       "name": "Export Sheet as PDF",

@@ -49,7 +49,7 @@ If you need cloud hosting for n8n: Railway.app free tier or a $5/mo VPS.
 - **LLM**: Groq API (llama-3.1-8b-instant, free tier)
 - **QR Generator**: QuickChart.io (free, no auth)
 - **Trigger**: Telegram Bot or Webhook
-- **Form Control**: Google Apps Script (close form, export PDF)
+- **Form Control**: Google Apps Script v2.1.0-privacy (close form, export PDF, anonymized export, data removal)
 
 ## Project Structure
 
@@ -96,8 +96,12 @@ LSPIRG-SURVEY-AGENT/
 4. Deploy > New Deployment > Web App
    - Execute as: **Me**
    - Who has access: **Anyone**
-5. Copy the deployment URL
-6. Test: visit `{DEPLOYMENT_URL}?action=setup_formatting&sheet_id={YOUR_SHEET_ID}`
+5. Copy the deployment URL (or use the existing deployment):
+   ```
+   https://script.google.com/macros/s/AKfycbwQlnKRG_u9arMLh9CwWjWDduIGxZW5bU2GoHNXO2VSRqhylotl6KUAk8Oqdu14i29q/exec
+   ```
+6. Test: visit `{DEPLOYMENT_URL}` with no params to see the health check status
+7. Apply formatting: visit `{DEPLOYMENT_URL}?action=setup_formatting&sheet_id={YOUR_SHEET_ID}`
    - This applies the purple/lime-green conditional formatting automatically
 
 ### Step 3: Groq API Key
@@ -137,8 +141,8 @@ cp .env.example .env
    - Import `workflows/telegram-bot-trigger.json`
 4. **Update placeholders** in each workflow:
    - Replace `YOUR_FORM_ID` with your Google Form ID
-   - Replace `YOUR_APPS_SCRIPT_DEPLOYMENT_ID` with your Apps Script URL
    - Replace `EVENT_ID_FIELD` with your form's entry field ID
+   - The Apps Script deployment URL is already configured in the main workflow
 5. **Activate** both workflows
 
 ### Step 7: Test
