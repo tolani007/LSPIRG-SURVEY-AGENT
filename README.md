@@ -4,29 +4,84 @@ Automated agentic workflow that generates QR-coded event surveys with AI-powered
 
 ## Architecture
 
+### n8n Workflow Screenshot
+
+![QR Survey Agent — n8n Workflow](docs/images/qr-survey-agent-workflow.png)
+
+> **Save the workflow screenshot** to `docs/images/qr-survey-agent-workflow.png` to display it above.
+
+---
+
+### Node Map (matches screenshot)
+
+**Flow 1 — Survey Generation (top row)**
+
 ```
-Telegram Bot / Webhook
-        |
+Webhook: Generate Survey
+        │
         v
-   ┌─────────┐     ┌──────────────┐     ┌─────────┐
-   │  n8n     │────>│ QuickChart   │────>│ QR Code │
-   │ (orch.)  │     │ (free QR)    │     │ to user │
-   └────┬─────┘     └──────────────┘     └─────────┘
-        |
-        v  (Google Form response arrives)
-   ┌─────────┐     ┌──────────────┐     ┌──────────────┐
-   │ Google   │────>│ Groq LLM    │────>│ Google Sheet  │
-   │ Sheets   │     │ (sentiment)  │     │ (write result)│
-   │ Trigger  │     └──────────────┘     └──────┬───────┘
-   └─────────┘                                  |
-                                                 v
-                                    ┌────────────────────┐
-                                    │ 5-Hour Kill Switch  │
-                                    │ (Wait node → Close  │
-                                    │  Form → PDF Export  │
-                                    │  → Email results)   │
-                                    └────────────────────┘
+Generate Event ID & URLs
+        │
+        ├──────────────────────────┐
+        v                          v
+  Fetch QR Image           Respond with QR Data
+        │
+        v
+ Telegram: Send QR
+  (sendMessage)
 ```
+
+| # | Node Name | Type | Purpose |
+|---|-----------|------|---------|
+| 1 | **Webhook: Generate Survey** | Webhook | Listens for POST `/survey` with event name |
+| 2 | **Generate Event ID & URLs** | Code | Creates `EVT-XXXXXX`, builds pre-filled Form URL + QR URL |
+| 3a | **Fetch QR Image** | HTTP Request | Calls QuickChart.io to render the QR code PNG |
+| 3b | **Respond with QR Data** | Respond to Webhook | Returns QR URL + Form URL as JSON to the caller |
+| 4 | **Telegram: Send QR** | Telegram (sendMessage) | Sends the QR image to the operator's Telegram chat |
+
+**Flow 2 — Response Processing + Kill Switch (bottom row)**
+
+```
+Google Sheet: New Response ──> Groq: Sentiment Analysis ──> Parse Sentiment
+       (rowAdded)                     (POST)                     │
+                                                                 v
+                                                    Write Sentiment to Sheet
+                                                          (read: sheet)
+                                                                 │
+                                                                 v
+                                                        Is First Response?
+                                                           /          \
+                                                     true /            \ false
+                                                         v              (end)
+                                                   Wait 5 Hours
+                                                         │
+                                                         v
+                                                 Close Google Form
+                                                         │
+                                                         v
+                                               Export Sheet as PDF
+                                                         │
+                                                         v
+                                                   Email Results
+                                                      (Send)
+                                                         │
+                                                         v
+                                              Telegram: Survey Closed
+                                                (sendMessage: message)
+```
+
+| # | Node Name | Type | Purpose |
+|---|-----------|------|---------|
+| 1 | **Google Sheet: New Response** | Google Sheets Trigger (rowAdded) | Fires when a new form response lands in the Sheet |
+| 2 | **Groq: Sentiment Analysis** | HTTP Request (POST) | Sends feedback text to Groq `llama-3.1-8b-instant` for classification |
+| 3 | **Parse Sentiment** | Code | Extracts the single-word result (`empath` or `needs growth`) from LLM response |
+| 4 | **Write Sentiment to Sheet** | Google Sheets (read: sheet) | Writes the sentiment label back to the Sentiment column |
+| 5 | **Is First Response?** | IF | Checks if this is row 2 (first real response) to decide whether to start the timer |
+| 6 | **Wait 5 Hours** | Wait | Pauses the execution branch for 5 hours (kill switch countdown) |
+| 7 | **Close Google Form** | HTTP Request | Calls Google Apps Script to set the form to "not accepting responses" |
+| 8 | **Export Sheet as PDF** | HTTP Request | Calls Google Apps Script to export the Sheet as a PDF file |
+| 9 | **Email Results** | Send Email | Emails the PDF report to `tolaniakinola@gmail.com` |
+| 10 | **Telegram: Survey Closed** | Telegram (sendMessage) | Notifies the operator that the survey window has ended |
 
 ## Cost Breakdown
 
@@ -66,6 +121,9 @@ LSPIRG-SURVEY-AGENT/
 ├── scripts/
 │   ├── setup.sh                    # One-command setup
 │   └── test-workflow.sh            # Test the webhook
+├── docs/
+│   └── images/
+│       └── qr-survey-agent-workflow.png  # n8n workflow screenshot
 └── README.md
 ```
 
@@ -202,7 +260,7 @@ Format > Conditional formatting > Add rules on the Sentiment column.
 
 ## Sprint Plan
 
-### Sprint 1 (Current)
+### Sprint 1 (Done)
 - [x] Project structure and Docker setup
 - [x] n8n workflow: QR generation via webhook
 - [x] n8n workflow: Telegram bot trigger
@@ -210,7 +268,38 @@ Format > Conditional formatting > Add rules on the Sentiment column.
 - [x] Google Apps Script: form close + PDF export + formatting
 - [x] 5-hour kill switch with Wait node
 - [x] Email delivery of results
-- [ ] Deploy and end-to-end test
+- [x] Workflow screenshot & node map documented in README
+
+---
+
+### Next-Hour Micro-Sprint — Deploy & Validate (Scrum)
+
+> **Sprint Goal:** Get the QR Survey Agent running end-to-end on a live n8n instance with real Google Form, Groq, and Telegram integrations — proving every node in the screenshot fires correctly.
+
+| # | Task | Timebox | Acceptance Criteria | Status |
+|---|------|---------|---------------------|--------|
+| 1 | **Stand-up: Verify workflow JSONs match screenshot** | 2 min | All 15 nodes in `qr-survey-agent.json` correspond 1-to-1 with the screenshot's node names and connections | `[ ]` |
+| 2 | **Spin up n8n via Docker** | 8 min | `docker compose up -d` succeeds; n8n UI reachable at `localhost:5678`; login with initial admin credentials | `[ ]` |
+| 3 | **Create Google Form + linked Sheet** | 10 min | Form has 1 paragraph question + 1 short-answer Event ID field; linked Sheet exists with "Sentiment" column header in column C; Form ID, Sheet ID, and entry field ID noted in `.env` | `[ ]` |
+| 4 | **Deploy Google Apps Script** | 5 min | `Code.gs` deployed as Web App; `?action=setup_formatting&sheet_id=...` returns success; purple/lime conditional formatting visible in Sheet | `[ ]` |
+| 5 | **Obtain Groq API key** | 5 min | API key generated at `console.groq.com`; test curl `POST /chat/completions` with `llama-3.1-8b-instant` returns 200 | `[ ]` |
+| 6 | **Create Telegram bot** | 5 min | Bot token from BotFather; chat ID from @userinfobot; test `sendMessage` via curl returns OK | `[ ]` |
+| 7 | **Import workflows & wire credentials** | 10 min | Both workflow JSONs imported into n8n; Google OAuth2, Groq HTTP header, Telegram credentials attached; all placeholder IDs replaced with real values; both workflows activated (green toggle) | `[ ]` |
+| 8 | **Smoke test: QR generation** | 5 min | POST to webhook returns JSON with `qrUrl` and `formUrl`; QR image renders in browser; Telegram bot receives QR image message | `[ ]` |
+| 9 | **E2E test: Full response loop** | 5 min | Scan QR on phone → submit feedback in Google Form → new row appears in Sheet within 60s → Sentiment column auto-filled with `empath` or `needs growth` → conditional formatting colors applied | `[ ]` |
+| 10 | **Validate kill switch branch** | 3 min | Confirm `Is First Response?` node evaluates `true` on row 2; Wait node shows "Waiting" state in n8n execution log; (optionally reduce wait to 1 min for testing, then revert to 5 hours) | `[ ]` |
+| 11 | **Sprint review & retro** | 2 min | Document any bugs or blockers in a `KNOWN_ISSUES.md` or GitHub Issue; update Sprint Plan checkboxes; tag the commit `v0.1.0-alpha` if all green | `[ ]` |
+
+**Total: ~60 minutes**
+
+#### Definition of Done (Micro-Sprint)
+- [ ] QR code generated from webhook trigger and delivered via Telegram
+- [ ] At least 1 real form response processed with correct sentiment label
+- [ ] Kill switch branch confirmed active (Wait node entered)
+- [ ] All credentials stored in n8n (not hard-coded in workflow JSON)
+- [ ] No errors in n8n execution log for the happy path
+
+---
 
 ### Sprint 2 (Backlog)
 - [ ] Multi-event support (concurrent surveys)
