@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building an ASCII Art Converter: Image Processing Meets Creative Coding | Tolani Akinola</title>
+    <meta name="description" content="I built a tool that turns any photograph into text art. Here is what it taught me about how computers see images, pixel manipulation, and creative coding.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Image Processing, Python, Creative Coding, Pillow, ASCII Art, Computer Vision, Pixel Manipulation">
+    <meta property="og:title" content="Building an ASCII Art Converter: Image Processing Meets Creative Coding">
+    <meta property="og:description" content="I built a tool that turns any photograph into text art. Here is what it taught me about how computers see images, pixel manipulation, and creative coding.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/ascii_art_converter.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>Building an ASCII Art Converter: Image Processing Meets Creative Coding</h1>
+    <p class="subtitle">I taught a computer to turn photographs into text art. The "aha" moment came when I realized every image is just a grid of numbers.</p>
+    <p class="read-time">10 min read</p>
+
+    <p>I built a tool that takes any image, a photo of your cat, a landscape, a selfie, and converts it into ASCII art. Those pictures made entirely out of text characters that look like they belong on a hacker's terminal from a 90s movie. The tool runs in a Jupyter Notebook using Python, and building it taught me more about how computers see images than any textbook ever could.</p>
+
+    <p>Here is why this matters beyond the fun factor. Image processing is the foundation of computer vision, which is the foundation of self-driving cars, medical imaging AI, facial recognition, and augmented reality. All of it starts with the same insight that powers this project: an image is just a grid of numbers.</p>
+
+    <p>This project is also proof that creative coding, using programming to make art, builds deeper understanding than any tutorial. The output is immediately visual and satisfying. You write code, and something beautiful appears. That feedback loop is addictive in the best way.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to understand image processing from first principles. Not by reading documentation, but by building something that forced me to manipulate every pixel in an image.</p>
+
+    <p>ASCII art was the perfect vehicle. It requires you to load an image, resize it, convert it to grayscale, and map brightness values to characters. Every step teaches a fundamental concept in computer vision. And the result is immediately visual, so you know right away if your code is working.</p>
+
+    <p>I also wanted to prove that the line between art and engineering is imaginary. This project sits at their intersection, and it is stronger for it.</p>
+
+    <h2>Core Concepts</h2>
+
+    <h3>How Computers See Images</h3>
+
+    <p>When you look at a photo, you see a dog, a sunset, a face. When a computer looks at a photo, it sees a grid of numbers. Each cell is a pixel. Each pixel has a value representing its color.</p>
+
+    <p>For a grayscale image, each pixel is a single number from 0 (black) to 255 (white). For a color image, each pixel has three numbers: red, green, and blue (RGB), each from 0 to 255. A 1920x1080 image is about 2 million pixels, each with three values. That is 6 million numbers. That is all an image is.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Once you internalize that every image is a grid of numerical values, the entire field of computer vision opens up. Filters, edge detection, neural networks: they all operate on that same grid.
+    </div>
+
+    <h3>Grayscale Conversion</h3>
+
+    <p>Color images have three channels (R, G, B). To convert to ASCII art, we need a single brightness value per pixel. The naive approach is to average the three channels: <code>gray = (R + G + B) / 3</code>.</p>
+
+    <p>But the human eye is more sensitive to green than red, and more sensitive to red than blue. So the standard formula weights them: <code>gray = 0.299*R + 0.587*G + 0.114*B</code>. This is the ITU-R BT.601 standard, used in television, JPEG compression, and every image editor on the planet.</p>
+
+    <h3>Character Mapping: The Core Trick</h3>
+
+    <p>Look at these characters: <code> .:-=+*#%@</code>. Notice how they go from "barely any ink" (a space) to "lots of ink" (the @ symbol). Each character has a visual density, meaning how much of its bounding box is filled.</p>
+
+    <p>A bright pixel maps to a light character like a dot. A dark pixel maps to a dense character like @. You replace each pixel with the character whose density matches its brightness.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> This mapping technique is the fundamental concept behind all data visualization. In ASCII art, brightness maps to character density. In a heatmap, values map to colors. In a bar chart, values map to bar heights. The skill is choosing a mapping that communicates effectively.
+    </div>
+
+    <h3>Aspect Ratio Correction</h3>
+
+    <p>A 1920x1080 image has 2 million pixels. You do not want 2 million characters in your ASCII art. So the first step is resizing, dramatically. Maybe to 100 characters wide.</p>
+
+    <p>But there is a subtlety: text characters are taller than they are wide, roughly a 2:1 ratio in most fonts. So you need to adjust the height to compensate, or the ASCII art will look vertically stretched. This small detail makes the difference between "cool" and "why does everything look tall."</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+        <pre>
+  +------------------+     +------------------+     +------------------+
+  |   LOAD IMAGE     |     |   RESIZE         |     |   GRAYSCALE      |
+  |   (Pillow)       |---->|   Width: ~100    |---->|   0.299R +       |
+  |   RGB pixel grid |     |   Height / 2     |     |   0.587G +       |
+  |                  |     |   (aspect fix)   |     |   0.114B         |
+  +------------------+     +------------------+     +--------+---------+
+                                                             |
+                                                             v
+  +------------------+     +------------------+     +------------------+
+  |   DISPLAY/SAVE   |     |   BUILD STRING   |<----|   MAP TO CHARS   |
+  |   Print in       |<----|   Row by row,    |     |   " .:-=+*#%@"   |
+  |   notebook or    |     |   newline at end |     |   brightness -->  |
+  |   save to .txt   |     |   of each row    |     |   character       |
+  +------------------+     +------------------+     +------------------+
+        </pre>
+    </div>
+
+    <p><strong>Step 1: Load the image.</strong> Using Pillow, open the image file. It becomes a grid of RGB pixel values.</p>
+
+    <p><strong>Step 2: Resize.</strong> Scale the image down to the desired width (about 100 characters). Adjust height for the character aspect ratio by dividing by 2.</p>
+
+    <p><strong>Step 3: Convert to grayscale.</strong> Apply the luminosity formula to get a single brightness value (0 to 255) for each pixel.</p>
+
+    <p><strong>Step 4: Map pixels to characters.</strong> For each pixel, divide its brightness into buckets corresponding to your character ramp. Brightness 0 to 25 might map to "@", brightness 230 to 255 might map to a space.</p>
+
+    <p><strong>Step 5: Build the output string.</strong> Row by row, concatenate the characters with a newline at the end of each row.</p>
+
+    <p>Here is the core mapping function:</p>
+
+    <pre><code>ASCII_CHARS = " .:-=+*#%@"
+
+def pixel_to_char(brightness):
+    index = int(brightness / 255 * (len(ASCII_CHARS) - 1))
+    return ASCII_CHARS[index]</code></pre>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Images are numbers.</strong> Every image is a grid of numerical values. This single realization is the entry point to all of computer vision, from simple filters to deep neural networks.</li>
+        <li><strong>Human perception shapes engineering decisions.</strong> The grayscale luminosity formula weights green more heavily because our eyes are more sensitive to green. Engineering often needs to account for how humans actually perceive things, not just how things technically work.</li>
+        <li><strong>Character density is data visualization.</strong> Mapping numerical values to visual representations is the fundamental concept behind every chart, heatmap, and dashboard you will ever build.</li>
+        <li><strong>Aspect ratios matter everywhere.</strong> Working with dimensions, ratios, and interpolation is a practical skill in web development, game development, and media processing.</li>
+        <li><strong>Pillow is the Swiss Army knife of Python image processing.</strong> Learning it opens doors to thumbnailing, watermarking, format conversion, and preprocessing for ML pipelines.</li>
+        <li><strong>Creative coding builds deeper understanding.</strong> Making art with code forces you to understand the underlying mechanics in a way that reading documentation never does.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Image processing knowledge comes up in more interviews than you might expect. Here are the questions this project prepares you for.</p>
+
+    <p><strong>Q: How does a computer represent an image?</strong></p>
+    <p>An image is a 2D grid of pixels. Each pixel in a color image has three channels: red, green, blue, each valued 0 to 255. A 1080p color image is a 1080 x 1920 x 3 array of integers. Libraries like NumPy let you manipulate this array mathematically.</p>
+
+    <p><strong>Q: How do you convert a color image to grayscale?</strong></p>
+    <p>Use weighted coefficients: <code>gray = 0.299R + 0.587G + 0.114B</code>. This accounts for human color sensitivity. It is the ITU-R BT.601 standard used in television and image processing worldwide.</p>
+
+    <p><strong>Q: What is an image processing pipeline?</strong></p>
+    <p>A sequence of operations applied to an image: load, resize, color convert, filter, transform, output. Each step takes an image as input and produces a modified version. This is the same concept behind ETL pipelines, ML preprocessing pipelines, and build systems.</p>
+
+    <p><strong>Q: How would you optimize this for very large images?</strong></p>
+    <p>Process in chunks instead of loading the entire image into memory. Resize early so there is less computation downstream. Use NumPy vectorized operations instead of Python loops over individual pixels. Generate the output progressively by streaming characters to a file.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre><code># Clone the repo
+git clone https://github.com/tolani007/ascii_art_converter.git
+cd ascii_art_converter
+
+# Install dependencies
+pip install pillow numpy jupyter
+
+# Launch the notebook
+jupyter notebook
+
+# Open the converter notebook and try it with your own images</code></pre>
+
+    <p>Explore the full project on <a href="https://github.com/tolani007/ascii_art_converter">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Image Processing / Python / Creative Coding / Pillow / ASCII Art</p>
+</article>
+</body>
+</html>

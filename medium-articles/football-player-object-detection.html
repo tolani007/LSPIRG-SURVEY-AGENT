@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>We Built a Soccer Player Detection Model in One Day. Here is How. | Tolani Akinola</title>
+    <meta name="description" content="How we used OpenCV and real-time inference to build a working football player object detection system in a single day of pair programming.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="computer vision, object detection, OpenCV, real-time inference, bounding boxes, sports tracking">
+    <meta property="og:title" content="We Built a Soccer Player Detection Model in One Day. Here is How. | Tolani Akinola">
+    <meta property="og:description" content="How we used OpenCV and real-time inference to build a working football player object detection system in a single day of pair programming.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/football-player-object-detection.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>We Built a Soccer Player Detection Model in One Day. Here is How.</h1>
+    <p class="subtitle">OpenCV, bounding boxes, confidence scores, and real-time inference: what happens when two engineers sprint through a computer vision project in a single day.</p>
+    <p class="read-time">10 min read</p>
+
+    <p>Here is the thing about computer vision that nobody tells you: the barrier to entry is way lower than you think. You do not need a PhD to build something that detects objects in video. The hard part is not the neural network. Someone already trained that. The hard part is the engineering.</p>
+
+    <p>My friend OJ and I built a working soccer player detection model in one day. Not a typo. We took OpenCV, a webcam, and some clever inference code and got a computer vision system that detects football players in real-time. It was fast, it was scrappy, and it absolutely worked.</p>
+
+    <p>This project matters because computer vision is everywhere: self-driving cars, medical imaging, retail analytics, manufacturing quality control, sports analytics. If you can build an object detection system, you have a skill that applies to dozens of industries. And if you can build one in a day, that tells an interviewer you can move fast and ship.</p>
+
+    <h2>Why We Built This</h2>
+
+    <p>We wanted to prove a simple thesis: you can go from zero to working object detection in a single focused day if you make smart tool choices. We scoped the problem tightly, chose the right tools (not the fanciest), divided work, and shipped something functional.</p>
+
+    <p>The goal was straightforward. Take video input, find every player on the pitch, draw a box around them, and do it fast enough that the output looks smooth. The result is a real-time pipeline that captures frames, runs inference, and displays annotated video.</p>
+
+    <h2>The Core Concepts</h2>
+
+    <p><strong>Object Detection vs. Image Classification.</strong> Classification looks at a whole image and says "this is a football match." Detection looks at the image and says "there is a player at position (120, 340) and another at (450, 200)." Detection is harder because it has to find WHERE objects are, not just WHAT the image contains. Think of it as the difference between recognizing a song versus transcribing every instrument's part.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The neural network is not the hard part. Getting frames from a camera, preprocessing them, running inference fast enough, drawing bounding boxes, and handling edge cases: that is where the real engineering lives.
+    </div>
+
+    <p><strong>Bounding Boxes.</strong> When the model detects a player, it draws a rectangle around them defined by four numbers: x, y (top-left corner), width, and height. These boxes are the model's way of saying "I think there is a player inside this rectangle." The tighter the box fits around the actual player, the better the detection.</p>
+
+    <p><strong>Confidence Scores.</strong> Every detection comes with a confidence score between 0 and 1. The model might say "I am 0.92 confident there is a player here" and "I am 0.3 confident there is a player there." You set a threshold (like 0.5) and only keep detections above it. Too low and you get false positives. Too high and you miss actual players.</p>
+
+    <p><strong>Non-Maximum Suppression (NMS).</strong> Sometimes the model detects the same player multiple times with overlapping bounding boxes. NMS is the cleanup step: if two boxes overlap by more than a threshold, keep the one with higher confidence and discard the other. It is like deduplicating search results.</p>
+
+    <p><strong>IoU (Intersection over Union).</strong> How do you measure if a predicted bounding box is "good"? You compare it to the ground truth box. IoU equals the area of overlap divided by the area of union. An IoU of 1.0 means perfect overlap. Below 0.3 means the model basically missed. This is the standard metric for evaluating detection quality.</p>
+
+    <h2>How It Works</h2>
+
+    <p>The pipeline runs in a tight loop, processing each frame in sequence. OpenCV's <code>VideoCapture</code> opens the webcam and grabs frames. Each frame gets resized to the model's expected input size and pixel values get normalized from the 0-255 range down to 0-1.</p>
+
+    <p>The inference module runs the preprocessed frame through the detection model. Raw detections get filtered by confidence threshold. NMS removes duplicate detections. Remaining boxes get drawn on the frame with labels. Then the annotated frame is displayed in a window, and the loop repeats.</p>
+
+    <p>This happens 20 to 30 times per second for real-time video.</p>
+
+    <div class="diagram">
+        <pre>
+  Webcam          Preprocessing       Inference          Post-Processing     Display
+  +--------+     +-------------+     +------------+     +---------------+   +--------+
+  | Capture| --> | Resize      | --> | Neural Net | --> | Confidence    | ->| Show   |
+  | Frame  |     | Normalize   |     | Detect     |     | Filter        |   | Frame  |
+  |        |     | BGR -> RGB  |     | Players    |     | NMS           |   | + Boxes|
+  +--------+     +-------------+     +------------+     | Draw Boxes    |   +--------+
+                                                        +---------------+
+                      ^                                         |
+                      |_________________________________________|
+                                  Loop (20-30 FPS)
+        </pre>
+    </div>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Rapid prototyping is a skill.</strong> Building a working CV system in a single day taught me to scope ruthlessly, choose proven tools over cutting-edge ones, and focus on shipping before polishing.</li>
+        <li><strong>OpenCV is the Swiss Army knife of computer vision.</strong> It handles video capture, color space conversion, image resizing, drawing annotations, and display. Learning it well pays dividends across every CV project.</li>
+        <li><strong>The gap between research and application is real.</strong> Using a pre-trained model sounds simple, but the engineering around it (preprocessing, post-processing, real-time constraints) is where most of the work lives.</li>
+        <li><strong>Pair programming accelerates complex projects.</strong> OJ and I divided the work naturally. Having a second brain to debug camera issues while the other person tunes detection thresholds made all the difference.</li>
+        <li><strong>Confidence thresholds require tuning.</strong> There is no universal "right" threshold. Too low and you get ghost detections. Too high and you miss players. Finding the sweet spot requires experimentation with your specific data.</li>
+        <li><strong>Real-time constraints change everything.</strong> When you need 20+ frames per second, every millisecond of preprocessing and inference matters. Model size, input resolution, and batch size all become critical decisions.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Computer vision roles are growing across every industry. Here are the interview questions this project prepares you for:</p>
+
+    <p><strong>"Explain the difference between object detection and image classification."</strong> Classification gives one label per image. Detection gives multiple objects, each with a location and label. Detection models output both WHERE and WHAT. Use the football project as a concrete example.</p>
+
+    <p><strong>"What is IoU and why does it matter?"</strong> Intersection over Union measures bounding box accuracy. Draw two overlapping rectangles. The overlapping area divided by the total area covered. Explain thresholds: IoU above 0.5 is typically "correct" in PASCAL VOC, above 0.75 in COCO strict evaluation.</p>
+
+    <p><strong>"How does Non-Maximum Suppression work?"</strong> Sort detections by confidence. Take the highest confidence box. Remove all other boxes that overlap with it above an IoU threshold. Repeat for the next highest remaining box. This eliminates duplicate detections.</p>
+
+    <p><strong>"How do you handle real-time performance constraints?"</strong> Discuss frame rate requirements (20 to 30 FPS for smooth video), model size versus speed tradeoffs, image resizing before inference, and GPU versus CPU considerations.</p>
+
+    <p><strong>"Tell me about a project you built quickly under time pressure."</strong> This is your story. One day, two people, one working model. Talk about how you scoped the problem, chose the right tools, divided work, and shipped something functional. This demonstrates velocity and pragmatism.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>You will need a webcam connected to your machine. Clone the repo, install dependencies, and run the detection script.</p>
+
+    <pre><code>git clone https://github.com/tolani007/football-player-object-detection-model-by-Eigentiki-and-OJ-.git
+cd football-player-object-detection-model-by-Eigentiki-and-OJ-
+bash setup_dependencies.sh
+python eigentiki-OJ-soccer-orus.py</code></pre>
+
+    <p>The notebooks in <code>notebooks/</code> and <code>examples/soccer/notebooks/</code> contain the experimentation and training code if you want to dig deeper into how the model works under the hood.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Computer Vision / Object Detection / OpenCV / Python / Sports Analytics</p>
+</article>
+</body>
+</html>

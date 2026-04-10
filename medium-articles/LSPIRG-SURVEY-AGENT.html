@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Built a $0 Per Month AI Survey System With QR Codes and Sentiment Analysis | Tolani Akinola</title>
+    <meta name="description" content="I built a fully automated event survey system with AI sentiment analysis, QR codes, and a 5-hour kill switch that costs zero dollars a month to run.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="AI agents, workflow automation, Docker, sentiment analysis, LLM, n8n, Telegram bot, cost optimization">
+    <meta property="og:title" content="I Built a $0 Per Month AI Survey System With QR Codes and Sentiment Analysis | Tolani Akinola">
+    <meta property="og:description" content="I built a fully automated event survey system with AI sentiment analysis, QR codes, and a 5-hour kill switch that costs zero dollars a month to run.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/LSPIRG-SURVEY-AGENT.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>I Built a $0 Per Month AI Survey System With QR Codes and Sentiment Analysis</h1>
+    <p class="subtitle">Someone scans a QR code at an event. Within seconds, an AI reads their feedback and classifies their sentiment. The whole pipeline costs nothing to run.</p>
+    <p class="read-time">9 min read</p>
+
+    <p>I needed a way to collect feedback at events. Real, honest feedback. Not "dump responses into a spreadsheet and maybe look at it next week." I wanted the whole pipeline: someone scans a QR code, fills out a quick survey, and within seconds an AI reads their response, classifies the sentiment, and the results get packaged into a report.</p>
+
+    <p>All automated. All free.</p>
+
+    <p>So I built exactly that. The system uses n8n (an open-source workflow automation platform I self-host with Docker) as the brain, Google Forms and Sheets as the data layer, Groq's API running Llama 3.1 for sentiment classification, QuickChart for QR code generation, and a Telegram bot as the trigger and notification channel. There is even a 5-hour kill switch that automatically shuts down the survey after the event ends, exports everything to PDF, and emails the results.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>The entire system costs zero dollars per month to operate. Groq offers a generous free tier for LLM inference. Google Forms and Sheets are free. n8n is self-hosted. Telegram bots are free. QuickChart is free.</p>
+
+    <p>This is what I mean by cost-conscious engineering. You do not need a big budget to build sophisticated systems. You need good architecture.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> Every architectural decision in this project was filtered through "can I do this for free?" Not because I am cheap, but because cost discipline forces elegant design. Free tiers are generous if you architect around them. The constraint of zero budget produced a cleaner system than unlimited budget would have.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <p><strong>Workflow Orchestration with n8n.</strong> Think of n8n like a series of dominoes. When the first one falls (a trigger event), each subsequent domino falls in order, and each one does something useful along the way. Except these dominoes can call APIs, read databases, run code, send messages, and make decisions. n8n gives you a visual canvas where you drag nodes around and connect them with wires. Each node is a step: "fetch data from this API," "transform this JSON," "send this Telegram message." It is like Zapier or Make, but open-source and self-hosted, which means I control everything and pay nothing.</p>
+
+    <p><strong>LLM-Powered Sentiment Classification.</strong> When a survey response comes in, I do not just store it. I send it to Groq's API, which runs Llama 3.1. I give the LLM a prompt like: "Classify this feedback as either 'empathetic/positive' or 'needs growth/constructive'." The model reads the response and returns a label.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> LLMs are not just for chatbots. They are classification engines, summarizers, and pattern detectors. Using them for structured classification tasks is one of the most practical applications in production systems today. Send text in, get labels out.
+    </div>
+
+    <p><strong>Event-Driven Architecture.</strong> Nothing in this system runs on a schedule polling for changes. Things happen in response to events: "A Telegram message arrived" triggers QR generation. "A new form response appeared in the Google Sheet" triggers sentiment analysis. "Five hours have passed" triggers the kill switch. This is the same pattern behind AWS Lambda, Google Cloud Functions, and every modern microservice. Events in, actions out.</p>
+
+    <p><strong>The Kill Switch Pattern.</strong> After 5 hours, the system automatically stops accepting responses, generates a PDF summary, and emails it to the organizer. This prevents stale surveys from collecting junk data after an event ends. In production systems, this is similar to TTLs on cache entries or auto-expiring tokens. The principle: every resource should have a defined lifecycle.</p>
+
+    <p><strong>Docker and Self-Hosting.</strong> n8n runs inside a Docker container defined in <code>docker-compose.yml</code>. Think of Docker as a shipping container for software. It packages the application with all its dependencies so it runs the same way everywhere. My laptop, a cloud VM, a Raspberry Pi. <code>docker-compose up</code> and the whole system is live.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Organizer                                              Attendees
+     |                                                      |
+     | "Start survey"                                       |
+     v                                                      |
++-----------+     +-----------+     +------------+          |
+| Telegram  |---->|   n8n     |---->| QuickChart |          |
+|   Bot     |     | Workflow  |     |   API      |          |
++-----------+     | Engine    |     +-----+------+          |
+                  |           |           |                  |
+                  |           |     QR Code image            |
+                  |           |           |                  |
+                  |           |<----------+                  |
+                  |           |                              |
+                  |  Send QR  |                              |
+                  |  back via |                              |
+                  |  Telegram |       Scan QR code           |
+                  |           |          +-------------------+
+                  |           |          |
+                  |           |          v
+                  |           |    +------------+
+                  |           |    |  Google    |
+                  |           |    |  Form      |
+                  |           |    +-----+------+
+                  |           |          |
+                  |           |    Response saved
+                  |           |          |
+                  |           |          v
+                  |           |    +------------+     +----------+
+                  |           +--->|  Google    |---->|  Groq    |
+                  |           |    |  Sheet     |     |  Llama   |
+                  |           |    +-----+------+     |  3.1     |
+                  |           |          |            +----+-----+
+                  |           |          |  Sentiment      |
+                  |           |          |  label written   |
+                  |           |          |<----------------+
+                  |           |          |
+                  |  5-hour   |          |
+                  |  timer    |          |
+                  |  fires    |          |
+                  |           |          v
+                  |           |    +------------+
+                  |           +--->|  PDF Export |---->  Email to
+                  |           |    |  + Close   |      organizer
+                  +-----------+    +------------+
+</pre>
+    </div>
+
+    <p>An event organizer sends a command to the Telegram bot. n8n catches the message, calls QuickChart to generate a QR code pointing to a Google Form, and sends the QR image back via Telegram. The organizer displays or prints the QR code at the event.</p>
+
+    <p>Attendees scan the code with their phones and fill out the survey. Responses land in a Google Sheet automatically. When a new row appears, n8n picks it up, sends the free-text feedback to Groq's Llama 3.1, and writes the sentiment label back to the Sheet.</p>
+
+    <p>After 5 hours, a timer fires. The workflow closes the form, exports the Sheet to PDF, and emails the report. Throughout the process, the Telegram bot sends status updates: "Survey started," "15 responses collected," "Survey closed, report sent."</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Workflow orchestration is a superpower.</strong> Tools like n8n, Airflow, and Prefect let you automate complex multi-step processes. This is the backbone of data engineering and DevOps.</li>
+        <li><strong>LLMs as classification tools.</strong> Forget chatbots. The real value of LLMs in production is structured tasks: classification, extraction, summarization. I send text in, I get labels out.</li>
+        <li><strong>Event-driven thinking changes everything.</strong> When you stop thinking in terms of "run this script every hour" and start thinking "react when this happens," your systems become more responsive and more efficient.</li>
+        <li><strong>Docker makes reproducibility trivial.</strong> One <code>docker-compose.yml</code> and anyone can run my entire system. This is the foundation of modern deployment.</li>
+        <li><strong>API integration is a career-long skill.</strong> This project chains together five different APIs: Telegram, QuickChart, Google Sheets, Groq, and email. Learning to read API docs, handle auth, and parse responses never stops being useful.</li>
+        <li><strong>Cost engineering is a design discipline.</strong> Building production-quality systems on free tiers teaches you to evaluate trade-offs. What does the free tier give you? What are the rate limits? What breaks if you scale?</li>
+        <li><strong>Shell scripting is underrated.</strong> The setup and test scripts in the <code>scripts/</code> directory automate the boring parts. Knowing bash well enough to automate setup and testing is a quiet superpower.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Building automated, event-driven systems is one of the most in-demand skills in modern engineering. Here are some interview questions this project prepares you to answer.</p>
+
+    <p><strong>Q: How would you build an automated data collection pipeline?</strong></p>
+    <p>Walk through the full flow: trigger mechanism (Telegram bot), data capture (Google Forms), storage (Google Sheets), processing (Groq LLM for sentiment), and reporting (PDF export plus email). Emphasize the event-driven nature. Nothing polls. Everything reacts.</p>
+
+    <p><strong>Q: What is workflow orchestration, and how is it different from a cron job?</strong></p>
+    <p>A cron job says "run this at midnight." Orchestration says "run step B after step A succeeds, run step C in parallel, and if step B fails, retry three times then alert me." n8n, Airflow, and Prefect are orchestrators. Cron is just a scheduler. Orchestration gives you dependency management, error handling, retries, and monitoring.</p>
+
+    <p><strong>Q: How do you use LLMs in production beyond chatbots?</strong></p>
+    <p>Classification, entity extraction, summarization, translation, and data enrichment. In this project, I use Llama 3.1 for binary sentiment classification. The key is structured prompting: give the model clear instructions and a constrained output format. This is the same pattern behind every AI feature in modern SaaS products.</p>
+
+    <p><strong>Q: How do you design systems that cost nothing to operate?</strong></p>
+    <p>Map your requirements to free tiers. Google Sheets for storage. Groq for LLM inference. Self-hosted n8n. Telegram bots. The design principle is to minimize external paid services by leveraging free-tier offerings and self-hosting where possible. The trade-off is operational overhead, since you maintain the infrastructure yourself.</p>
+
+    <p><strong>Q: What would you change if this needed to scale to 10,000 respondents?</strong></p>
+    <p>Replace Google Sheets with PostgreSQL. Replace self-hosted n8n with a managed orchestrator or AWS Step Functions. Add a queue (SQS or RabbitMQ) between form submission and sentiment analysis to handle bursts. The architecture is already event-driven, so scaling is mostly about swapping components, not redesigning.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>
+git clone https://github.com/tolani007/LSPIRG-SURVEY-AGENT.git
+cd LSPIRG-SURVEY-AGENT
+
+# Run the setup script
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+
+# Or start manually with Docker
+docker-compose up -d
+
+# Test the workflow
+chmod +x scripts/test-workflow.sh
+./scripts/test-workflow.sh
+    </pre>
+
+    <p>You will also need to configure a Telegram bot token (via BotFather), Google Forms/Sheets API credentials, and a Groq API key (free tier). Check the workflow JSON files in <code>workflows/</code> for the n8n configuration.</p>
+
+    <p>Explore the full project on <a href="https://github.com/tolani007/LSPIRG-SURVEY-AGENT">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: AI Agents / Workflow Automation / Docker / Sentiment Analysis / LLM</p>
+
+</article>
+</body>
+</html>

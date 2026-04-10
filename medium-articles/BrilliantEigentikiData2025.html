@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Built My Own Year-in-Review App Because Brilliant Did Not Have One | Tolani Akinola</title>
+    <meta name="description" content="I extracted my Brilliant.org learning data, processed it with Python, and built a fully animated year-in-review with React, Framer Motion, and Recharts.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="React, data visualization, Framer Motion, TypeScript, Python, Recharts, year in review, Brilliant.org">
+    <meta property="og:title" content="I Built My Own Year-in-Review App Because Brilliant Did Not Have One | Tolani Akinola">
+    <meta property="og:description" content="I extracted my Brilliant.org learning data, processed it with Python, and built a fully animated year-in-review with React, Framer Motion, and Recharts.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/BrilliantEigentikiData2025.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>I Built My Own Year-in-Review App Because Brilliant Did Not Have One</h1>
+    <p class="subtitle">Raw learning data in, animated interactive visualization out. The full pipeline from Python extraction to React, Framer Motion, and Recharts.</p>
+    <p class="read-time">9 min read</p>
+
+    <p>I use Brilliant.org to study math and science. I love those end-of-year recaps that Spotify and GitHub do. Brilliant did not have one.</p>
+
+    <p>So I built my own.</p>
+
+    <p>I extracted my learning data, processed it with Python, and created a fully animated, interactive web visualization with React, Framer Motion, Recharts, and Web Audio API for sound feedback. It has a particle-effect hero section, scroll-triggered animations, counting stat cards, an activity heatmap, streak visualizations, course progress cards, glassmorphism design, dark/light mode toggle, and responsive layouts. This is not "pretty charts on a page." It is a full data pipeline project: raw data goes in one end, and an interactive, animated story comes out the other.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>Data visualization is one of the most in-demand skills in tech, and most people stop at "matplotlib bar chart." I wanted to see what happens when you bring frontend engineering rigor to data visualization. When the data tells a story, and the presentation makes people actually want to read it.</p>
+
+    <p>This project exercises an unusual combination of muscles: data engineering (Python processing), frontend engineering (React plus TypeScript), animation engineering (Framer Motion), data visualization (Recharts), and UX design (responsive, accessible, beautiful). Very few projects touch this many disciplines at once.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> The best projects come from scratching your own itch. Building this taught me more than waiting for Brilliant to build one ever would. I learned Python data processing, React animation, data visualization, and full-pipeline thinking in a single project.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <p><strong>Data Processing Pipeline (Python to JSON to React).</strong> The project starts with raw data from Brilliant.org and ends with an interactive web page. In between, there is a pipeline. Think of it like cooking: Python (<code>scripts/extract-data.py</code>) is the prep kitchen where raw ingredients get cleaned, sliced, and organized into containers (<code>src/data/processed-data.json</code>). React is the dining room where those prepared ingredients get plated beautifully. The JSON file is the pass-through window connecting the two. This separation is crucial. If Brilliant changes their data format, I only fix the Python script. The React app never needs to know.</p>
+
+    <p><strong>Framer Motion Animations.</strong> Framer Motion is React's best animation library. The core idea is simple: instead of toggling CSS classes, you describe where a component should start and where it should end, and Framer Motion figures out the in-between. Want a card to fade in from the left? <code>initial=&#123;&#123; opacity: 0, x: -50 &#125;&#125;</code> and <code>animate=&#123;&#123; opacity: 1, x: 0 &#125;&#125;</code>. That is it.</p>
+
+    <p>But the real power is in scroll-triggered animations using <code>whileInView</code>, gesture animations with <code>whileHover</code> and <code>whileTap</code>, and spring physics that make motion feel natural instead of robotic. Springs have damping and stiffness, just like real physical springs. That is why Framer Motion animations feel "alive."</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> Scroll-triggered animations are not just decoration. They are information design. You process one section, then the next one appears. The animation controls the pacing of the narrative, guiding the reader through the data story one piece at a time.
+    </div>
+
+    <p><strong>Recharts for Data Visualization.</strong> Recharts is a React-native charting library built on D3.js. The key advantage over raw D3 is that Recharts speaks React's language: components, props, and state. The activity heatmap (think GitHub's contribution graph) shows learning patterns across days and weeks. The course progress charts show completion percentages. Recharts handles axes, tooltips, legends, and responsive sizing. Under the hood, it renders SVG elements, which means everything is crisp at any resolution.</p>
+
+    <p><strong>Glassmorphism Design.</strong> Glassmorphism makes elements look like frosted glass. In CSS, it is <code>backdrop-filter: blur(10px)</code> plus a semi-transparent background color. It creates depth without heavy shadows. Combined with dark mode (swapping the color palette based on a toggle), the design adapts to user preference while maintaining the same visual language.</p>
+
+    <p><strong>Web Audio API for Sound Feedback.</strong> Sound turns a passive viewing experience into an active one. When a stat card counts up, a subtle tick sound plays. When you complete a section scroll, a satisfying chime. The implementation uses the same AudioContext and oscillator pattern from my other projects, but here it serves a different purpose: reinforcement. Sound makes interactions feel more tangible.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Brilliant.org Data
+        |
+        v
++------------------+
+| Python Script    |     scripts/extract-data.py
+|                  |
+| - Extract raw    |
+|   metrics        |
+| - Clean data     |
+| - Aggregate      |
+| - Structure JSON |
++--------+---------+
+         |
+         v
++------------------+
+| processed-data   |     src/data/processed-data.json
+|       .json      |
++--------+---------+     (Single source of truth)
+         |
+         v
++------------------+     React App (Vite dev server)
+|                  |
+|  +------------+  |
+|  |   Hero     |  |     Particle animations + headline stats
+|  +-----+------+  |
+|        | scroll   |
+|        v          |
+|  +------------+  |
+|  | StatCards  |  |     Count from 0 to target + sound tick
+|  +-----+------+  |
+|        | scroll   |
+|        v          |
+|  +------------+  |
+|  | Heatmap    |  |     Activity grid (Recharts)
+|  +-----+------+  |
+|        | scroll   |
+|        v          |
+|  +------------+  |
+|  | Streaks    |  |     Streak visualization
+|  +-----+------+  |
+|        | scroll   |
+|        v          |
+|  +------------+  |
+|  | Progress   |  |     Course completion bars (Recharts)
+|  +------------+  |
+|                  |
+|  [Dark/Light]    |     CSS variables swap, no re-render
+|  [Responsive]    |     Tailwind breakpoints
++------------------+
+</pre>
+    </div>
+
+    <p>The pipeline starts with <code>scripts/extract-data.py</code>, which runs against Brilliant.org data. Python processes the raw metrics: courses completed, streaks, daily activity, time spent, scores. The script cleans, aggregates, and structures everything into <code>src/data/processed-data.json</code>.</p>
+
+    <p>When the React app loads, it reads that JSON file. The Hero component initializes particle animations and displays headline stats with entrance animations. As the user scrolls, Intersection Observer triggers fire and Framer Motion animates each section into view.</p>
+
+    <p>StatCards receive a target number and animate from 0 to the target using <code>requestAnimationFrame</code> and an easing function. Sound plays on completion. Recharts components render the activity heatmap, streak visualization, and course progress bars. A dark/light mode toggle swaps CSS variables, recoloring the entire page without re-rendering components. Tailwind's responsive breakpoints rearrange the layout for mobile.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>End-to-end data pipeline thinking.</strong> Raw data in, beautiful visualization out. The Python-to-JSON-to-React pipeline is a miniature version of what data teams do at scale.</li>
+        <li><strong>Framer Motion mastery.</strong> Spring physics, scroll triggers, gesture animations, layout animations. Framer Motion is the industry standard for React animation, and this project made me fluent.</li>
+        <li><strong>Data visualization principles.</strong> Choosing the right chart for the right data, labeling axes clearly, using color meaningfully. These are data literacy skills that transfer to any tool.</li>
+        <li><strong>React component design.</strong> Breaking a complex page into composable, reusable components with clear prop interfaces. This is the core skill of frontend engineering.</li>
+        <li><strong>Python data processing.</strong> Using pandas and Python scripting to transform raw data into analysis-ready formats. The same skill used in data engineering and data science.</li>
+        <li><strong>Web Audio as interaction design.</strong> Sound is an underused dimension in web development. Learning when and how to use it adds a layer to your UX thinking.</li>
+        <li><strong>Responsive design rigor.</strong> Making a complex animated page work on phones, tablets, and desktops requires careful planning with Tailwind's breakpoint system.</li>
+        <li><strong>Dark mode implementation.</strong> Understanding CSS custom properties, the <code>prefers-color-scheme</code> media query, and state-driven theme toggling.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Full-stack data visualization is a rare and valuable skill combination. Here are some interview questions this project prepares you to answer with confidence.</p>
+
+    <p><strong>Q: Walk me through a data pipeline you have built.</strong></p>
+    <p>Start with the source (Brilliant.org data), explain the processing step (Python script that cleans and aggregates), describe the output format (structured JSON), and show the consumer (React frontend). Emphasize separation of concerns: if the source changes, only the Python script changes. If the visualization changes, only React changes. They are decoupled by the JSON contract.</p>
+
+    <p><strong>Q: How does Framer Motion work, and why choose it over CSS animations?</strong></p>
+    <p>Framer Motion uses spring physics (damping, stiffness, mass) instead of CSS's bezier curves. Springs feel more natural because they overshoot and settle, like real objects. Framer Motion also integrates natively with React's component model. You can animate mount/unmount, respond to state changes, and coordinate complex sequences. CSS animations cannot do layout animations or spring physics without JavaScript.</p>
+
+    <p><strong>Q: How would you build an activity heatmap like GitHub's contribution graph?</strong></p>
+    <p>It is a grid where each cell represents a day, colored by activity level. The data structure is an array of <code>{ date, count }</code> objects. You map dates to grid positions: columns for weeks, rows for days of the week. Color is a function of count: 0 is gray, 1 to 3 is light green, 4+ is dark green. Recharts or D3 can render this, or you can build it with plain CSS Grid and dynamic class names.</p>
+
+    <p><strong>Q: How do you implement dark mode in a React application?</strong></p>
+    <p>Three layers: detect system preference with <code>prefers-color-scheme</code>, provide a manual toggle that stores the user's choice in localStorage, and apply the theme using CSS custom properties or Tailwind's <code>dark:</code> variant. The toggle updates a state variable and a class on the root element. All color values reference the theme, so swapping the class recolors everything.</p>
+
+    <p><strong>Q: How do you make animations accessible?</strong></p>
+    <p>Respect the <code>prefers-reduced-motion</code> media query. Users who have motion sensitivity enable this in their OS settings. In Framer Motion, you can use the <code>useReducedMotion</code> hook and conditionally disable animations. Never make essential information dependent on animation.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>
+git clone https://github.com/tolani007/BrilliantEigentikiData2025.git
+cd BrilliantEigentikiData2025
+
+# Process the data first
+python3 scripts/extract-data.py
+
+# Install frontend dependencies
+npm install
+
+# Start the development server
+npm run dev
+
+# Open in your browser (usually http://localhost:5173)
+    </pre>
+
+    <p>To use your own Brilliant data, replace the source data and rerun the Python extraction script. The React app reads from <code>src/data/processed-data.json</code>, so as long as your script outputs the same structure, everything works.</p>
+
+    <p>Explore the full project on <a href="https://github.com/tolani007/BrilliantEigentikiData2025">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: React / Data Visualization / Framer Motion / TypeScript / Python</p>
+
+</article>
+</body>
+</html>

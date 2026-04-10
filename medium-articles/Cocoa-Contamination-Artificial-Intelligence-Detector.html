@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using AI to Detect Cocoa Leaf Disease: When Machine Learning Meets Agriculture | Tolani Akinola</title>
+    <meta name="description" content="I built an AI image classifier that detects cocoa leaf diseases from smartphone photos. Transfer learning, CNNs, and precision agriculture for real-world impact.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="AI, agriculture, image classification, transfer learning, cocoa farming, deep learning">
+    <meta property="og:title" content="Using AI to Detect Cocoa Leaf Disease: When Machine Learning Meets Agriculture | Tolani Akinola">
+    <meta property="og:description" content="I built an AI image classifier that detects cocoa leaf diseases from smartphone photos. Transfer learning, CNNs, and precision agriculture for real-world impact.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Cocoa-Contamination-Artificial-Intelligence-Detector.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>Using AI to Detect Cocoa Leaf Disease: When Machine Learning Meets Agriculture</h1>
+    <p class="subtitle">A smartphone, a photo of a leaf, and a deep learning model that tells farmers exactly what is wrong with their crop, before it is too late.</p>
+    <p class="read-time">11 min read</p>
+
+    <p>Cocoa diseases cause billions of dollars in crop losses annually. The farmers who suffer most are smallholders in West Africa, Southeast Asia, and Latin America, people who can least afford to lose a harvest. By the time a human expert identifies the problem, entire plantations can be devastated.</p>
+
+    <p>I built an AI system that changes that equation. A farmer with a smartphone can take a photo of a suspicious cocoa leaf, run it through the model, and get an immediate diagnosis. Early detection means targeted treatment. Targeted treatment means less crop loss, less pesticide waste, and more money in the farmer's pocket.</p>
+
+    <p>This is not a toy project. This is AI doing what it should do: solving a real problem for real people, with a technical stack designed from the ground up for deployability in resource-constrained environments.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to prove that meaningful AI does not require a GPU cluster or a million-dollar budget. Transfer learning means you can build an accurate image classifier with a relatively small dataset. Smart model design means it can run on a smartphone with no internet connection.</p>
+
+    <p>The simplicity is the point. A model that only works in a research lab is useless to a farmer in rural Ghana. I optimized for deployability as much as accuracy, because getting the model to the people who need it is half the engineering challenge.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> For disease detection, recall matters more than precision. Missing a real disease (false negative) means untreated crop loss. A false alarm (false positive) just means an unnecessary inspection. I would rather over-alert than under-detect.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Image Classification</h3>
+
+    <p>Imagine teaching a child to identify animals. You show them hundreds of pictures of cats and dogs, and eventually they learn the visual patterns that distinguish one from the other. Image classification works the same way.</p>
+
+    <p>I showed the model thousands of cocoa leaf images labeled as "healthy," "black pod disease," "frosty pod rot," and so on. The model learned the visual patterns: discoloration, lesion shapes, texture changes. Given a new photo, it outputs probabilities for each disease class.</p>
+
+    <h3>Convolutional Neural Networks (CNNs)</h3>
+
+    <p>A CNN is the engine behind image classification. Imagine sliding a tiny magnifying glass across an image. At each position, it detects a specific pattern. The first layer detects simple things like edges and corners. The second layer combines those into textures and shapes. By the deep layers, the network recognizes high-level features like lesion boundaries and discoloration halos.</p>
+
+    <p>This hierarchical feature learning is why CNNs are so powerful for visual tasks. They automatically discover the features that matter, without me having to manually define them.</p>
+
+    <h3>Transfer Learning</h3>
+
+    <p>Training a CNN from scratch requires millions of images and days of GPU time. I do not have that. What I do have is transfer learning: I take a model already trained on millions of images (like ImageNet) and repurpose it for cocoa leaf classification.</p>
+
+    <p>The early layers of the pre-trained model already know how to detect edges, textures, and shapes. Those skills transfer to any visual domain. I only need to retrain the final layers to recognize cocoa-specific diseases. Think of it like hiring an experienced chef and only needing to teach them your restaurant's specific recipes. You do not need to teach them how to hold a knife.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Transfer learning took me from zero cocoa leaf expertise to a working disease classifier in days, not months. This is the most practical technique in modern deep learning, and every ML practitioner needs it in their toolkit.
+    </div>
+
+    <h3>Data Augmentation</h3>
+
+    <p>My cocoa leaf dataset is not huge. To prevent the model from memorizing training images instead of learning generalizable patterns, I use data augmentation: rotations, flips, brightness adjustments, crops, and slight color shifts. This artificially expands the training set and teaches the model to recognize diseases regardless of leaf orientation, lighting, or camera angle.</p>
+
+    <p>It is like studying for an exam by working through the same problem from different angles. You learn the underlying concept, not just the specific example.</p>
+
+    <h3>Precision Agriculture</h3>
+
+    <p>Instead of spraying an entire plantation with pesticide because some leaves look sick, a farmer can use my detector to identify which areas are actually affected and what specific treatment is needed. This saves money, reduces chemical runoff, and protects beneficial insects. My detector is one tool in the precision agriculture toolkit: the eyes that help the farmer see what is happening at scale.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Cocoa Leaf Photos
+  (labeled: healthy, black pod,
+   frosty pod rot, etc.)
+           |
+           v
+  Preprocessing + Augmentation
+  (resize, normalize, rotate,
+   flip, color shift)
+           |
+           v
+  Pre-trained CNN Backbone
+  (ResNet / EfficientNet)
+  [Frozen early layers]
+           |
+           v
+  Custom Classification Head
+  [Trainable final layers]
+           |
+           v
+  Fine-tuning
+  (Gradually unfreeze layers,
+   small learning rate)
+           |
+           v
+  Evaluation
+  (Precision, Recall, F1
+   per disease class)
+           |
+           v
+  Mobile Deployment
+  (TFLite / ONNX, offline
+   inference on smartphone)
+</pre>
+    </div>
+
+    <p>The pipeline starts with data collection and labeling. Cocoa leaf images representing different cultivars, lighting conditions, and disease stages. Images are resized, normalized, and split into training, validation, and test sets. Data augmentation is applied to the training set.</p>
+
+    <p>I start with a pre-trained CNN backbone like ResNet or EfficientNet and add custom classification layers on top. The early layers are frozen (they already know edges and textures). Only the later layers and the new classification head are trained on cocoa leaf images. Then I gradually unfreeze more layers and fine-tune with a very small learning rate.</p>
+
+    <p>Evaluation uses precision, recall, and F1 for each disease class, with special attention to rare diseases. If a class has poor recall, I investigate: not enough training examples? Need more augmentation? Then I adjust and retrain. The final step is deployment preparation: optimize model size, test on simulated mobile hardware, and package with clear user-facing outputs.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Transfer learning is a game-changer.</strong> Pre-trained models carry over so much visual knowledge that you can build accurate classifiers with relatively small domain-specific datasets.</li>
+        <li><strong>Domain knowledge matters.</strong> Understanding cocoa diseases, their visual symptoms, and progression patterns made me a better ML engineer for this project. I could spot when the model was picking up on the wrong features, like leaf background color instead of disease symptoms.</li>
+        <li><strong>Evaluation metrics are a design choice.</strong> Accuracy is not always the right metric. For disease detection, I optimized for recall because a missed disease costs the farmer their harvest. The metric should match the real-world cost of errors.</li>
+        <li><strong>Data augmentation is essential for small datasets.</strong> In agriculture, large labeled datasets are rare and expensive to create. Augmentation is how you stretch a small dataset without degrading model quality.</li>
+        <li><strong>Deployment thinking changes design.</strong> When I started thinking about a farmer with a smartphone in a rural area with spotty internet, my entire model architecture changed. Smaller models, offline inference, and clear non-technical outputs became requirements, not afterthoughts.</li>
+        <li><strong>AI for social good is real engineering.</strong> This requires the same rigor as any production ML system. Maybe more, because the users cannot debug your model for you.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Image classification, transfer learning, and deployment optimization are core skills that come up in nearly every ML interview. Here is how this project prepares you:</p>
+
+    <p><strong>Q1: Explain transfer learning and when you would use it.</strong><br>
+    Transfer learning leverages a model pre-trained on a large dataset and adapts it to a new, smaller dataset. The early layers learn general visual features that transfer across domains. Use it when your target dataset is too small to train a deep model from scratch, which is most real-world scenarios.</p>
+
+    <p><strong>Q2: How do you handle class imbalance in image classification?</strong><br>
+    Oversampling minority classes, applying class weights to the loss function, using data augmentation more aggressively on underrepresented classes, and evaluating with precision, recall, and F1 per class instead of overall accuracy.</p>
+
+    <p><strong>Q3: What is the difference between precision and recall?</strong><br>
+    Precision: of all predictions of disease X, how many were correct? Recall: of all actual cases of disease X, how many did we detect? For a disease detector, recall matters more because missing a real disease means untreated crop loss.</p>
+
+    <p><strong>Q4: How would you deploy this for rural areas with limited connectivity?</strong><br>
+    Export to a mobile-friendly format (TFLite or ONNX), optimize with quantization and pruning, and build a lightweight app that runs inference locally. No internet required for classification. Results sync when connectivity is available.</p>
+
+    <p><strong>Q5: How do CNNs learn hierarchical features?</strong><br>
+    Each convolutional layer applies filters that detect patterns at a specific level of abstraction. Early layers learn edges. Middle layers combine those into textures. Deep layers combine those into high-level concepts. This hierarchical composition happens automatically through backpropagation.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>The complete training workflow is open source. Walk through the notebook from data loading to model evaluation:</p>
+
+    <pre><code>git clone https://github.com/tolani007/Cocoa-Contamination-Artificial-Intelligence-Detector.git
+cd Cocoa-Contamination-Artificial-Intelligence-Detector
+
+pip install jupyter numpy pandas matplotlib tensorflow
+
+jupyter notebook
+
+# Walk through the cells:
+# 1. Data loading and exploration
+# 2. Preprocessing and augmentation
+# 3. Model building (transfer learning)
+# 4. Training and evaluation
+# 5. Results visualization</code></pre>
+
+    <p>Find the full repository here: <a href="https://github.com/tolani007/Cocoa-Contamination-Artificial-Intelligence-Detector">github.com/tolani007/Cocoa-Contamination-Artificial-Intelligence-Detector</a></p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: AI / Agriculture / Image Classification / Transfer Learning / Python</p>
+</article>
+</body>
+</html>

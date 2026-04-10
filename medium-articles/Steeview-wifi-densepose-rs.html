@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Built a System That Detects Human Poses Through Walls Using WiFi | Tolani Akinola</title>
+    <meta name="description" content="A Rust-based system that tracks human poses through walls using WiFi signals and $5 ESP32 microcontrollers. 810x faster than Python, with 10 modular crates.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Rust, signal processing, WiFi sensing, DensePose, embedded systems, ESP32, IoT">
+    <meta property="og:title" content="I Built a System That Detects Human Poses Through Walls Using WiFi | Tolani Akinola">
+    <meta property="og:description" content="A Rust-based system that tracks human poses through walls using WiFi signals and $5 ESP32 microcontrollers. 810x faster than Python, with 10 modular crates.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Steeview-wifi-densepose-rs.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>I Built a System That Detects Human Poses Through Walls Using WiFi</h1>
+    <p class="subtitle">No cameras. No wearables. Just $5 ESP32 microcontrollers and a Rust engine running 810x faster than Python.</p>
+    <p class="read-time">14 min read</p>
+
+    <p>Imagine an elderly person who lives alone and falls in the middle of the night. A camera in the bedroom is a privacy nightmare. A wearable only works if they remember to put it on. But WiFi signals pass through walls, reflect off human bodies, and carry information about movement and pose. Silently. Continuously. Without any privacy-invasive visual data.</p>
+
+    <p>That is what I built. A system that can track up to 3 people through solid walls using nothing but WiFi signals and $5 ESP32 microcontrollers. The Rust engine I wrote from scratch processes each frame in approximately 18 microseconds. That is 810x faster than the Python prototype.</p>
+
+    <p>The applications are real and urgent: fall detection for elderly care, search-and-rescue in collapsed buildings, hospital monitoring where cameras are inappropriate. This is what happens when signal processing, embedded systems, and Rust come together in the same project.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>The engineering challenge fascinated me. WiFi Channel State Information (CSI) is noisy, multipath-heavy, and incredibly sensitive to environmental changes. Extracting human pose from that signal requires a pipeline of sophisticated digital signal processing, all running fast enough for real-time tracking.</p>
+
+    <p>Python could not come close to the performance requirements. I chose Rust because I needed the speed of C with the safety guarantees of a modern language. The result is 10 modular crates covering everything from signal processing to neural networks to a Three.js real-time dashboard.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Privacy-preserving AI is a design choice, not an afterthought. Steeview deliberately avoids cameras because the application demands it. Ethics shaped the architecture from day one.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Channel State Information (CSI)</h3>
+
+    <p>Every WiFi packet carries hidden metadata that most people never think about. When a WiFi signal travels from your router to your laptop, it bounces off walls, furniture, and people. By the time it arrives, the signal has been modified by everything it interacted with.</p>
+
+    <p>CSI is a detailed measurement of exactly how the signal was modified across different frequency subcarriers. Think of it as a detailed fingerprint of the environment between the transmitter and receiver. When a person moves, walks, or falls, the CSI fingerprint changes. My system reads those changes and interprets them as human motion.</p>
+
+    <h3>The Digital Signal Processing Pipeline</h3>
+
+    <p>Raw CSI data is messy. Imagine trying to listen to a whispered conversation in a noisy stadium. You need serious filtering. My DSP pipeline is a sequence of cleaning and analysis steps:</p>
+
+    <p><strong>Phase Sanitization</strong> removes hardware artifacts from raw phase measurements. Think of it like removing the wobble from a camera before you can read the scene. <strong>Hampel Filtering</strong> is outlier removal. It catches wildly wrong readings caused by interference or hardware glitches and replaces them with the local median. <strong>FFT (Fast Fourier Transform)</strong> converts time-domain signals to frequency-domain, which is where human activities have distinct signatures. Breathing is around 0.1 to 0.5 Hz. Walking is 1 to 2 Hz. Falling is a sudden broadband spike.</p>
+
+    <p><strong>Fresnel Zone Tracking</strong> handles localization. A Fresnel zone is the cigar-shaped region between a WiFi transmitter and receiver where signal reflection is strongest. By modeling the Fresnel zones between multiple transmitter-receiver pairs, I can triangulate a person's position in 3D space. Think of it like crossing laser beams in a heist movie, except the beams are WiFi signals.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> FFT is the workhorse of this entire system. It separates human activities by frequency the same way a prism separates white light into colors. Understanding frequency-domain analysis opens doors far beyond WiFi sensing: audio, radar, communications, medical imaging.
+    </div>
+
+    <h3>Rust's Ownership Model</h3>
+
+    <p>I chose Rust for more than raw speed. Rust's ownership model guarantees memory safety at compile time. No null pointer dereferences. No data races. No use-after-free bugs. In a real-time signal processing system where data flows between threads at high speed, this is not a nice-to-have. It is essential.</p>
+
+    <p>Think of it like a traffic system where the compiler physically prevents car crashes rather than just posting speed limit signs and hoping for the best. Every one of the 10 crates in this project benefits from Rust's zero-cost abstractions: the safety of a high-level language with the performance of C.</p>
+
+    <h3>ESP32 Microcontrollers</h3>
+
+    <p>The ESP32 is a $5 microcontroller with built-in WiFi. I wrote C++ firmware that runs on these tiny chips, extracts CSI data from incoming WiFi packets, and streams it over UDP to the Rust engine. These are commodity hardware, not specialized laboratory equipment. I use multiple boards positioned around a space to create overlapping Fresnel zones, giving the system spatial resolution.</p>
+
+    <h3>WebAssembly for Edge Deployment</h3>
+
+    <p>One of the 10 crates compiles to WebAssembly, which means the signal processing can run inside a web browser. A nurse's station could run the pose detection locally in their browser without sending data to a server, preserving patient privacy. WASM runs at near-native speed, and Rust is one of the best languages for targeting it.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  ESP32 Boards (around the room)
+  Capture WiFi packets, extract CSI
+              |
+         UDP Streaming
+              |
+              v
+  +------ Rust Engine ------+
+  |                         |
+  |  Phase Sanitization     |
+  |       |                 |
+  |  Hampel Filtering       |
+  |       |                 |
+  |  FFT (frequency domain) |
+  |       |                 |
+  |  Fresnel Zone Modeling  |
+  |       |                 |
+  |  Neural Network (pose)  |
+  +-------------------------+
+        |             |
+        v             v
+   PostgreSQL    Three.js Dashboard
+   + Redis       (60fps 3D rendering)
+   (history)
+        |
+        v
+   Prometheus + Grafana
+   (system monitoring)
+</pre>
+    </div>
+
+    <p>ESP32 microcontrollers are placed around a room. They passively capture WiFi packets and extract CSI data for each frequency subcarrier. UDP streaming sends raw data to the central Rust engine in real-time. The engine feeds it through the DSP pipeline: phase sanitization, Hampel filtering, FFT, and Fresnel zone modeling.</p>
+
+    <p>The neural network crate takes the processed signal features and estimates human pose: body position, limb orientation, activity type. PostgreSQL with Redis caching stores historical data. The API crate serves results over HTTP and WebSocket to the Three.js dashboard, which renders 3D pose estimates at 60fps. Prometheus and Grafana track system performance.</p>
+
+    <h3>The 10 Crate Architecture</h3>
+
+    <p><strong>core:</strong> shared types and pipeline coordination. <strong>signal:</strong> all DSP operations. <strong>nn:</strong> neural network inference. <strong>db:</strong> PostgreSQL and Redis. <strong>hardware:</strong> ESP32 communication and UDP streams. <strong>config:</strong> configuration management. <strong>api:</strong> REST and WebSocket endpoints. <strong>mat:</strong> optimized matrix operations. <strong>cli:</strong> command-line control and diagnostics. <strong>wasm:</strong> WebAssembly compilation target.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Systems thinking at scale.</strong> Coordinating 10 crates, hardware firmware, database layers, and real-time visualization taught me how to design systems where components are loosely coupled but tightly coordinated.</li>
+        <li><strong>Rust is worth the learning curve.</strong> The compiler fights you at first. But once you internalize ownership and borrowing, you write code that is both fast and provably safe. The 810x speedup is not a benchmark trick. It is the difference between "works in a lab" and "works in real-time."</li>
+        <li><strong>DSP is a superpower.</strong> Understanding FFT, filtering, and frequency-domain analysis opens doors far beyond WiFi sensing. The math is the same in audio processing, radar, communications, and medical imaging.</li>
+        <li><strong>Hardware integration is humbling.</strong> Working with ESP32 firmware, dealing with clock drift, packet loss, and hardware variability taught me respect for the physical layer that most software engineers never touch.</li>
+        <li><strong>Performance profiling is an art.</strong> Getting to 18 microseconds per frame required profiling every allocation, minimizing copies, and understanding CPU cache behavior. I learned more about computer architecture from this project than from any textbook.</li>
+        <li><strong>Privacy-preserving AI is a design choice.</strong> The system detects pose and movement, not identity. There is no visual data to leak. Ethics shaped the architecture from day one.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Systems engineering, embedded programming, and Rust are some of the hottest skills in the market. Here is how this project prepares you for tough interview questions:</p>
+
+    <p><strong>Q1: Why Rust over C++ for real-time signal processing?</strong><br>
+    Rust gives C++-level performance with memory safety guaranteed at compile time. In a system processing live sensor data across multiple threads, data races and null pointer bugs are not just inconvenient. They can crash the system and miss a fall detection. Rust's ownership model eliminates these classes of bugs entirely.</p>
+
+    <p><strong>Q2: Explain your DSP pipeline and why each step is necessary.</strong><br>
+    Phase sanitization corrects hardware artifacts. Hampel filtering removes outlier spikes. FFT converts to frequency domain where human activities have distinct signatures. Fresnel zone modeling provides spatial localization. Each step builds on the previous one. Skip any step and the downstream results degrade significantly.</p>
+
+    <p><strong>Q3: How does WiFi-based pose detection work without cameras?</strong><br>
+    WiFi signals reflect off the human body. Different body positions create different reflection patterns in the Channel State Information. The neural network learns the mapping from CSI features to human pose through supervised training on labeled data.</p>
+
+    <p><strong>Q4: How did you achieve 810x speedup over Python?</strong><br>
+    Three factors: Rust compiles to native machine code with no garbage collector overhead. I used zero-copy data structures and minimized heap allocations in the hot path. I leveraged Rust's fearless concurrency to parallelize independent pipeline stages across CPU cores.</p>
+
+    <p><strong>Q5: What are the ethical considerations of through-wall tracking?</strong><br>
+    The system detects pose and movement, not identity. There is no visual data. For production deployment, I would add encryption to the data stream, strict access controls, and consent frameworks. The technology is designed around privacy-preserving applications where cameras are inappropriate.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>The complete system is open source. Build the Rust engine, flash the ESP32 firmware, and start experimenting:</p>
+
+    <pre><code>git clone https://github.com/tolani007/Steeview-wifi-densepose-rs.git
+cd Steeview-wifi-densepose-rs
+
+# Build the Rust engine (requires Rust 1.70+)
+cargo build --release
+
+# Run tests across all 10 crates
+cargo test
+
+# Start the system
+cargo run --release -- --config config/default.toml
+
+# For the Three.js dashboard
+cd dashboard && npm install && npm start</code></pre>
+
+    <p>Requirements: Rust 1.70+, Docker (for PostgreSQL, Redis, Prometheus, Grafana), Node.js (for dashboard), PlatformIO (for ESP32 firmware).</p>
+
+    <p>Find the full repository here: <a href="https://github.com/tolani007/Steeview-wifi-densepose-rs">github.com/tolani007/Steeview-wifi-densepose-rs</a></p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Rust / Signal Processing / IoT / Embedded Systems / Computer Vision</p>
+</article>
+</body>
+</html>

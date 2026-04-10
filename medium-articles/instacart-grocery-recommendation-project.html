@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building a Grocery Recommendation System: Lessons From the Instacart Dataset | Tolani Akinola</title>
+    <meta name="description" content="How I built a grocery recommendation engine using collaborative filtering, market basket analysis, and feature engineering on Instacart's real-world dataset.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="recommendation systems, collaborative filtering, market basket analysis, data science, Python">
+    <meta property="og:title" content="Building a Grocery Recommendation System: Lessons From the Instacart Dataset | Tolani Akinola">
+    <meta property="og:description" content="How I built a grocery recommendation engine using collaborative filtering, market basket analysis, and feature engineering on Instacart's real-world dataset.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/instacart-grocery-recommendation-project.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>Building a Grocery Recommendation System: Lessons From the Instacart Dataset</h1>
+    <p class="subtitle">Collaborative filtering, market basket analysis, and the feature engineering that actually makes recommendations work on millions of real grocery transactions.</p>
+    <p class="read-time">13 min read</p>
+
+    <p>The question sounds simple: "Given a customer's purchase history, what will they order next?" The answer is anything but simple. It requires understanding habits (people reorder the same milk every week), exploration (sometimes they try something new), temporal patterns (bananas on Monday, wine on Friday), and product relationships (if they buy pasta, they probably want marinara sauce).</p>
+
+    <p>I built a recommendation engine on Instacart's publicly available grocery transaction dataset, one of the largest and richest e-commerce datasets out there. This is the exact same problem that powers Amazon's "Customers who bought this also bought..." and Netflix's recommendation feed.</p>
+
+    <p>But grocery shopping is uniquely interesting. People do not buy one item at a time. They build baskets, and those baskets have internal logic. A recommendation system that understands basket dynamics is fundamentally different from one that just matches individual products.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>Recommendation systems are one of the most asked-about topics in data science interviews, especially at e-commerce companies. I wanted a worked example that covered the full spectrum: collaborative filtering, content-based methods, market basket analysis, and serious feature engineering on real transactional data.</p>
+
+    <p>I also wanted to wrestle with the real challenges. Sparsity (most users buy a tiny fraction of available products). Cold starts (new users with no history). Temporal ordering (you cannot test on the past and train on the future). These are the problems that separate textbook recommendations from production systems.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The difference between a mediocre recommendation model and a good one was not the algorithm. It was the features. Reorder rate, purchase cadence, and basket-level context were more valuable than sophisticated algorithms on raw data.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Collaborative Filtering</h3>
+
+    <p>Imagine you and your friend have bought the same 20 groceries over the past month. Then your friend buys oat milk, which you have never tried. Collaborative filtering says: "You and your friend have very similar taste. Your friend likes oat milk. You probably will too."</p>
+
+    <p>It does not care why you might like it. It just finds people like you and recommends what they enjoy. There are two flavors: user-based (find similar users, recommend their items) and item-based (find similar items to what you already buy). Item-based tends to work better at scale because item-item similarity is more stable than user-user similarity.</p>
+
+    <h3>Content-Based Filtering</h3>
+
+    <p>Content-based filtering takes the opposite approach. Instead of looking at other customers, it looks at the characteristics of products you already like and finds similar products. If you buy organic, gluten-free granola, it looks for other products that are organic, gluten-free, and in the breakfast aisle.</p>
+
+    <p>The advantage: it works even for new users with no purchase history. The disadvantage: it can trap you in a bubble of things you already know, never surfacing a surprising recommendation.</p>
+
+    <h3>Market Basket Analysis</h3>
+
+    <p>This concept is both intuitive and powerful. Market basket analysis asks: "Which products are frequently purchased together?" In my Instacart project, I analyzed co-occurrence patterns across thousands of baskets to find non-obvious associations. People who buy avocados also tend to buy limes and cilantro (guacamole night). These association rules become powerful features for the recommendation model.</p>
+
+    <p>Three key metrics drive this analysis. <strong>Support:</strong> how frequently does this combination appear? <strong>Confidence:</strong> given item A in the basket, how often is item B also there? <strong>Lift:</strong> is this co-occurrence more frequent than random chance? A lift greater than 1 means the items are positively associated.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Market basket analysis gives you cross-selling power that pure collaborative filtering misses. If someone adds tortilla chips to their cart, the system can proactively suggest salsa, even if no "similar user" happened to buy that exact combination.
+    </div>
+
+    <h3>Feature Engineering on Transactional Data</h3>
+
+    <p>Raw transaction data is just: "User X bought product Y at time T." That is not enough for a good model. Feature engineering transforms these raw facts into rich behavioral signals:</p>
+
+    <p><strong>Reorder rate:</strong> what fraction of a user's orders include product Y? High reorder rate means it is a staple. <strong>Days since last purchase:</strong> has it been 7 days since they bought milk? They probably need more. Has it been 90 days? Maybe they switched brands. <strong>Order sequence position:</strong> do they add bananas first (they are planning around it) or last (it is an afterthought)?</p>
+
+    <p><strong>Aisle and department co-occurrence:</strong> people who shop heavily in the produce aisle have different needs than people who shop in frozen foods. <strong>Time-of-day and day-of-week patterns:</strong> weekend orders look different from weekday orders. This feature engineering is where the real craft of recommendation systems lives.</p>
+
+    <h3>Handling Sparsity</h3>
+
+    <p>The Instacart dataset has millions of orders and hundreds of thousands of products. The user-item matrix is 99%+ empty. Most users buy a tiny fraction of available products. Learning from this sparse signal is the core challenge. I used sparse matrix representations, efficient data types, and vectorized operations to keep the notebook from crashing, and careful negative sampling to handle the ambiguity of missing purchases.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Raw Instacart Dataset
+  (orders, products, aisles,
+   departments, order_products)
+              |
+              v
+  Exploratory Data Analysis
+  (popular products, basket sizes,
+   reorder patterns, peak times)
+              |
+              v
+  Feature Engineering
+  +---------------------------+
+  | User features:            |
+  |   total orders, avg basket|
+  |   favorite aisle, cadence |
+  | Product features:         |
+  |   reorder rate, popularity|
+  |   avg cart position       |
+  | User-Product features:    |
+  |   times purchased, days   |
+  |   since last, reorder %   |
+  +---------------------------+
+              |
+       +------+------+
+       |      |      |
+       v      v      v
+  Collab  Content  Market
+  Filter  Filter   Basket
+       |      |      |
+       +------+------+
+              |
+              v
+  Evaluation (temporal split)
+  Precision@K, Recall@K, MAP
+</pre>
+    </div>
+
+    <p>The pipeline starts with loading the Instacart dataset and understanding the schema. Exploratory data analysis reveals the most popular products, basket size distributions, reorder frequencies, and peak ordering times.</p>
+
+    <p>Feature engineering is the heart of the project. I build user-level features (total orders, average basket size, favorite aisle), product-level features (reorder rate, popularity rank, average add-to-cart position), and user-product features (number of times purchased, fraction of orders containing it, days since last purchase).</p>
+
+    <p>Then I attack the problem from three angles: collaborative filtering with user-item interaction matrices, content-based filtering with product metadata, and market basket analysis with association rules. Data is split temporally (train on earlier orders, test on the last order) to avoid information leakage. Evaluation uses Precision@K, Recall@K, and Mean Average Precision.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Recommendation systems are harder than they look.</strong> The concept is intuitive ("suggest things people will like"), but the execution requires careful thinking about data sparsity, cold starts, evaluation methodology, and computational scaling.</li>
+        <li><strong>Feature engineering is the multiplier.</strong> Reorder rate, purchase cadence, and basket-level context were more valuable than sophisticated algorithms on raw data. The model is only as good as the features you feed it.</li>
+        <li><strong>Temporal ordering matters.</strong> In time-series-like data, your train/test split must respect time. If you randomly split orders, you leak future information into the model, and your evaluation metrics will be misleadingly optimistic.</li>
+        <li><strong>Sparsity is the enemy.</strong> The user-item matrix is 99%+ empty. Learning from this sparse signal is the core challenge, and it requires techniques like matrix factorization and careful negative sampling.</li>
+        <li><strong>Domain intuition helps.</strong> Knowing that people buy groceries weekly, that fresh produce has a short repurchase cycle, and that holidays shift purchasing patterns guided both my feature engineering and my error analysis.</li>
+        <li><strong>Large dataset management is a skill.</strong> Efficient data types, chunked processing, and sparse matrix representations made the difference between a notebook that crashes and one that runs.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Recommendation systems are among the most commonly asked-about topics in data science interviews. Here is how this project prepares you:</p>
+
+    <p><strong>Q1: Explain the difference between collaborative filtering and content-based filtering.</strong><br>
+    Collaborative filtering finds patterns in user behavior and recommends items that similar users liked. Content-based filtering uses item attributes to recommend similar items. Collaborative is better at surprising recommendations; content-based avoids the cold-start problem. Most production systems use a hybrid.</p>
+
+    <p><strong>Q2: What is the cold start problem and how would you handle it?</strong><br>
+    Cold start occurs when a new user or new product has no interaction data. For new users: fall back to popularity-based recommendations. For new products: use content-based methods with product metadata. As interaction data accumulates, transition to collaborative methods.</p>
+
+    <p><strong>Q3: How would you evaluate a recommendation system?</strong><br>
+    Never use random train/test splits for temporal data. Split by time. Use Precision@K, Recall@K, and Mean Average Precision. Also consider offline metrics versus online A/B testing, since offline metrics do not capture novelty and serendipity.</p>
+
+    <p><strong>Q4: Explain market basket analysis and give an example.</strong><br>
+    It finds products frequently purchased together using support (frequency), confidence (conditional probability), and lift (beyond random chance). Example: "customers who buy spaghetti also buy tomato sauce with 3.5x lift." These rules power cross-selling and store layout optimization.</p>
+
+    <p><strong>Q5: How would you scale a recommendation system to millions of users?</strong><br>
+    Pre-compute item-item similarity (more stable than user-user). Use approximate nearest neighbors (FAISS or Annoy) instead of exact search. Batch-generate recommendations offline and serve from cache. Use sparse matrix representations and segment users into cohorts when individual data is sparse.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>The full recommendation pipeline is open source. Clone the repo, download the Instacart dataset, and walk through the notebook:</p>
+
+    <pre><code>git clone https://github.com/tolani007/instacart-grocery-recommendation-project.git
+cd instacart-grocery-recommendation-project
+
+pip install jupyter numpy pandas scikit-learn matplotlib seaborn
+
+# Download the Instacart dataset:
+# https://www.instacart.com/datasets/grocery-shopping-2017
+
+jupyter notebook
+
+# Walk through:
+# 1. Data exploration
+# 2. Feature engineering
+# 3. Model building
+# 4. Evaluation and insights</code></pre>
+
+    <p>Find the full repository here: <a href="https://github.com/tolani007/instacart-grocery-recommendation-project">github.com/tolani007/instacart-grocery-recommendation-project</a></p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Recommendation Systems / Data Science / Python / Machine Learning / E-Commerce</p>
+</article>
+</body>
+</html>

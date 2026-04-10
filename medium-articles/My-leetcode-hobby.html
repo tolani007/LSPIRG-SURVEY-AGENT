@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My LeetCode Journey: A Pattern-Based Approach to Algorithms | Tolani Akinola</title>
+    <meta name="description" content="I do not grind LeetCode. I genuinely enjoy it. Here is my pattern-based approach to data structures and algorithms that changed how I think about code.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Algorithms, Data Structures, LeetCode, Python, Coding Interviews, Big-O, Dynamic Programming">
+    <meta property="og:title" content="My LeetCode Journey: A Pattern-Based Approach to Algorithms">
+    <meta property="og:description" content="I do not grind LeetCode. I genuinely enjoy it. Here is my pattern-based approach to data structures and algorithms that changed how I think about code.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/My-leetcode-hobby.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>My LeetCode Journey: A Pattern-Based Approach to Algorithms</h1>
+    <p class="subtitle">I do not grind LeetCode. I genuinely enjoy it. This is how falling in love with algorithms changed the way I write all code.</p>
+    <p class="read-time">12 min read</p>
+
+    <p>I know "LeetCode grind" has a reputation as a soul-crushing rite of passage. But for me, solving algorithmic problems is like solving puzzles. It is the same satisfaction as finishing a crossword or cracking a riddle. I never dread opening a new problem. I look forward to it.</p>
+
+    <p>This is not a cheat sheet or a list of memorized solutions. It is a documentation of how I think about problems. The reasoning path matters more than the answer. If you understand why an approach works, you can adapt it to any variation an interviewer throws at you.</p>
+
+    <p>And here is the thing that surprised me most: the algorithmic thinking I practice on LeetCode shows up everywhere. When I choose a list versus a set, I am making an algorithmic decision. When a database query runs in milliseconds instead of minutes, it is because of indexing algorithms. These are not interview tricks. They are the bedrock of computer science.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted a living record of my problem-solving journey. Not just solutions, but the thinking process behind each one. Why did I choose a hash map? What made me recognize a sliding window pattern? What alternatives did I consider?</p>
+
+    <p>Most LeetCode repositories are solution dumps. Mine is a reasoning library. Every solution comes with the mental model that produced it. That makes it useful to my future self and to anyone else who reads it.</p>
+
+    <p>I also wanted to prove something to myself: that you can enjoy this process. That algorithms are not just an interview gate to endure. They are a craft to develop.</p>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Arrays, Strings, and the Two-Pointer Technique</h3>
+
+    <p>An array is a row of numbered boxes. Box 0, Box 1, Box 2, and so on. You can jump to any box instantly if you know its number. That is O(1) access. The catch: inserting or removing a box in the middle means shifting everything after it.</p>
+
+    <p>Most array problems on LeetCode come down to two patterns: <strong>two pointers</strong> (one at each end, walking inward) or <strong>sliding windows</strong> (a movable frame over a portion of the array). The trick is always the same: can you avoid looking at every element more than once?</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Strings are just arrays of characters. If you can solve array problems, you can solve string problems. The data structure is identical; only the interpretation changes.
+    </div>
+
+    <h3>Hash Maps (The Most Important Data Structure)</h3>
+
+    <p>A hash map is like a coat check. You hand over your coat (value) and get a ticket number (key). Later, you show the ticket and get your coat back instantly. In Python, this is a dictionary.</p>
+
+    <p>The magic: lookup, insertion, and deletion are all O(1) on average. Whenever a problem says "find if X exists" or "count occurrences," a hash map is almost always the answer.</p>
+
+    <p>The classic example is Two Sum. Given an array, find two numbers that add to a target. Without a hash map, check every pair: O(n squared). With a hash map, for each number, check if (target minus number) is already in the map. One pass. O(n). Beautiful.</p>
+
+    <h3>Trees and Graph Traversals</h3>
+
+    <p>A tree is a family tree. One root at the top, children branching down. A binary search tree adds an ordering rule: everything left is smaller, everything right is larger. This makes searching O(log n), because at each node you eliminate half the remaining candidates.</p>
+
+    <p>A graph is a map of cities and roads. The two fundamental traversal algorithms are BFS (explore all neighbors before going deeper, like ripples on a pond) and DFS (go as deep as possible before backtracking, like exploring a maze).</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> BFS finds the shortest path in unweighted graphs. DFS is better for detecting cycles, topological sorting, and exploring all possibilities. Choosing between them is one of the most common interview questions.
+    </div>
+
+    <h3>Dynamic Programming</h3>
+
+    <p>DP is the art of not solving the same problem twice. Imagine climbing a staircase where you can take 1 or 2 steps. How many ways can you reach step 10? You could recursively try every combination, but you will re-calculate "ways to reach step 5" dozens of times.</p>
+
+    <p>DP says: calculate it once, store the result, and look it up later. The two approaches are top-down (recursion with memoization) and bottom-up (iteration from the base case). The hard part is seeing the substructure: can I express the answer for size N in terms of answers for smaller sizes?</p>
+
+    <h3>Stacks, Queues, and Heaps</h3>
+
+    <p>A stack is a stack of plates: last in, first out. A queue is a line at a coffee shop: first in, first out. These simple structures power surprisingly complex algorithms. Stacks are behind every function call in your program. Queues power BFS. When you see "process things in order," think queue. When you see "match things in reverse order," think stack.</p>
+
+    <p>A heap is like an ER waiting room. The most urgent patient goes first. In a min-heap, the smallest element is always at the top. Insertion and extraction are both O(log n). Use it for "find the K largest elements" or "merge K sorted lists."</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+        <pre>
+  +-------------------+
+  |  READ THE PROBLEM |
+  |  Understand input, |
+  |  output, constraints|
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | IDENTIFY PATTERN  |
+  | Sliding window?   |
+  | BFS? DP? HashMap? |
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | PLAN THE APPROACH |
+  | Pseudocode, data  |
+  | structure, Big-O  |
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | IMPLEMENT (Python) |
+  | Clean, readable   |
+  | Use built-ins     |
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | TEST + EDGE CASES |
+  | Empty input?      |
+  | Single element?   |
+  | All duplicates?   |
+  +---------+---------+
+            |
+            v
+  +-------------------+
+  | DOCUMENT REASONING|
+  | Why this approach? |
+  | What alternatives? |
+  +-------------------+
+        </pre>
+    </div>
+
+    <p><strong>Step 1:</strong> Read the problem carefully. Understand what input you are given and what output is expected. Identify constraints like array size and value range.</p>
+
+    <p><strong>Step 2:</strong> Identify the pattern. Is this a sliding window problem? A BFS? A DP? Recognizing the pattern is 80% of the work.</p>
+
+    <p><strong>Step 3:</strong> Plan before coding. Write pseudocode. Choose your data structure. State your expected time complexity.</p>
+
+    <p><strong>Step 4:</strong> Implement in Python. Use built-in data structures: lists, dicts, sets, heapq, deque.</p>
+
+    <p><strong>Step 5:</strong> Test with examples, then think of edge cases. Empty input, single element, all duplicates, maximum size.</p>
+
+    <p><strong>Step 6:</strong> Document the reasoning. This is what makes my repo different from a solution dump.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Pattern recognition is the real skill.</strong> After enough problems, you start seeing categories. "Oh, this is a sliding window problem." "This is BFS on an implicit graph." That pattern library is invaluable in interviews and in real engineering.</li>
+        <li><strong>Algorithmic thinking changes how you write all code.</strong> The ability to reason about time and space complexity improves every function you write, not just interview solutions.</li>
+        <li><strong>Python fluency compounds.</strong> List comprehensions, dictionary tricks, itertools, heapq, collections.deque. Daily practice makes you genuinely fast in Python.</li>
+        <li><strong>Every hard problem is made of easy subproblems.</strong> Learning to decompose is the most transferable skill in computer science.</li>
+        <li><strong>Practice builds calm.</strong> When you have solved hundreds of problems, a whiteboard interview feels like a conversation, not an exam.</li>
+        <li><strong>There is genuine joy in elegance.</strong> Finding a clean, efficient solution produces a thrill that keeps me coming back.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Technical interviews are conversations about how you think. This practice prepares you for the most common lines of questioning.</p>
+
+    <p><strong>Q: Explain the time complexity of your solution.</strong></p>
+    <p>Always state Big-O for both time and space. Walk through the analysis: "I have one loop over N elements, and inside the loop I do a hash map lookup which is O(1), so the total is O(N) time and O(N) space for the hash map."</p>
+
+    <p><strong>Q: Can you solve this without extra space?</strong></p>
+    <p>This asks if you can go from O(N) space to O(1). Techniques: two pointers, in-place array modification, bit manipulation, or mathematical formulas. Not always possible, but always worth considering.</p>
+
+    <p><strong>Q: What data structure would you use for this problem?</strong></p>
+    <p>Connect the problem's requirements to the data structure's strengths. Need fast lookup? Hash map. Need sorted order with fast insert? Balanced BST. Need FIFO processing? Queue. Need to repeatedly extract the minimum? Heap. Justify with Big-O.</p>
+
+    <p><strong>Q: Walk me through your approach before you start coding.</strong></p>
+    <p>State the problem in your own words. Identify the pattern. Sketch the algorithm in plain English. State expected time and space complexity. Then start coding. Interviewers care about your thought process as much as your code.</p>
+
+    <p><strong>Q: What if the input is very large, say 10 million elements?</strong></p>
+    <p>O(n squared) is out. You need O(n log n) or O(n). Think about streaming solutions that process elements one at a time. Consider external sorting, MapReduce, or approximation algorithms. Show that you think about real-world constraints.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre><code># Clone the repo
+git clone https://github.com/tolani007/My-leetcode-data-structure-and-algorithm-hobby-.git
+cd My-leetcode-hobby
+
+# Browse solutions by problem
+ls
+
+# Run a solution
+python3 &lt;problem_name&gt;.py</code></pre>
+
+    <p>No special dependencies needed. Just Python 3 and curiosity. Explore the full project on <a href="https://github.com/tolani007/My-leetcode-data-structure-and-algorithm-hobby-">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Algorithms / Data Structures / LeetCode / Python / Coding Interviews</p>
+</article>
+</body>
+</html>

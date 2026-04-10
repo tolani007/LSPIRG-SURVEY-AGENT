@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Over-Engineered Tic-Tac-Toe With Three.js and Generative Audio. Here is Why. | Tolani Akinola</title>
+    <meta name="description" content="I turned the simplest game in the world into a full sensory experience with 3D graphics, generative audio, and canvas effects to learn every browser API at once.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Three.js, creative coding, Web Audio API, Node.js, JavaScript, Canvas API, game development, Google Cloud Run">
+    <meta property="og:title" content="I Over-Engineered Tic-Tac-Toe With Three.js and Generative Audio. Here is Why. | Tolani Akinola">
+    <meta property="og:description" content="I turned the simplest game in the world into a full sensory experience with 3D graphics, generative audio, and canvas effects to learn every browser API at once.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/neon-tic-tac-toe.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>I Over-Engineered Tic-Tac-Toe With Three.js and Generative Audio. Here is Why.</h1>
+    <p class="subtitle">A 3D parallax board, chromatic aberration trails, generative drone soundscapes, and confetti. All for a game you used to play on napkins.</p>
+    <p class="read-time">8 min read</p>
+
+    <p>I took the simplest game in the world and turned it into a full sensory experience. A 3D parallax board that tilts as you move your mouse. An animated liquid background. Chromatic aberration cursor trails. A generative space drone soundscape. Confetti when you win.</p>
+
+    <p>Yes, it is absurd. That was the point.</p>
+
+    <p>When you build something "serious," you play it safe. When you build something absurd, you experiment. I touched Three.js, the Web Audio API, the Canvas API, CSS3 animations, touch event handling, Express.js, and Google Cloud Run deployment in a single project. Every one of those is a real skill that shows up in real jobs. The game was the excuse. The learning was the point.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to understand how the modern browser works as a platform. Not as a document viewer. As an engine for graphics, sound, and interactivity.</p>
+
+    <p>The best way to learn a dozen browser APIs is to give yourself permission to go completely overboard. Constraints breed creativity, and absurd scope breeds breadth. By adding 3D rendering, generative audio, canvas effects, and cloud deployment to a tic-tac-toe game, I covered more ground in one project than most tutorial series cover in a semester.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> The modern browser can do 3D graphics, generate audio in real time, process images, and run at 60 frames per second. You do not always need a native app. Learning what the browser can do changes how you think about every project.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <p><strong>Three.js and 3D Rendering.</strong> Think of your browser as a window into a 3D world. Three.js gives you the toolkit to build that world. You create a scene (the room), a camera (your eyes), and a renderer (the artist who paints what the camera sees onto your screen). For this project, I use Three.js for the parallax board tilting. As you move your mouse, the board subtly rotates in 3D space, like holding a card and tilting it under a light. Under the hood, that is matrix math and WebGL shaders. Three.js wraps it all in a friendly API so you can say "rotate this 5 degrees on the Y axis" instead of writing raw GPU instructions.</p>
+
+    <p><strong>Web Audio API and Generative Sound.</strong> The Web Audio API is like having a tiny recording studio inside the browser. You create oscillators (think: tuning forks vibrating at specific frequencies), connect them through effects like reverb and filters, and route them to the speakers. My space drone soundscape is not a pre-recorded MP3. It is generated in real time by layering low-frequency oscillators with slow modulation. Imagine three people each humming a slightly different note and slowly changing pitch. That is generative audio.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> Audio in the browser is a graph of connected nodes, just like a signal chain in a recording studio. Source nodes flow into processing nodes, which flow into the destination. Understanding this graph model is how all audio software works, from GarageBand to professional DAWs.
+    </div>
+
+    <p><strong>Canvas API for Visual Effects.</strong> The HTML Canvas is your digital drawing surface. Every frame (roughly 60 times per second), I clear the canvas and redraw everything. The chromatic aberration cursor trails work by drawing the same shape three times, slightly offset, in red, green, and blue, mimicking how a cheap camera lens splits light. The liquid background uses simplex noise to animate flowing color blobs, creating that lava-lamp effect.</p>
+
+    <p><strong>Game State Management.</strong> Even Tic-Tac-Toe needs state management. I track whose turn it is, what is in each cell, and whether someone has won. This is the same fundamental pattern behind every interactive app: you have state (the data), actions (user clicks a cell), and rendering (update the UI to reflect the new state). React, Vue, Redux; they all formalize this exact loop. Tic-Tac-Toe is the perfect sandbox to internalize it before frameworks add complexity.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
++------------------+
+|   Express Server |    server.js starts, serves public/ directory
+|   (Node.js)      |
++--------+---------+
+         |
+         v
++------------------+     +-------------------+     +------------------+
+|  Browser Loads   |---->|  Three.js Init    |---->|  Canvas Layers   |
+|  HTML + JS + CSS |     |                   |     |                  |
+|                  |     |  Scene + Camera   |     |  Liquid BG at    |
+|                  |     |  + Renderer       |     |  60fps           |
+|                  |     |  Parallax tilt on |     |  Cursor trails   |
+|                  |     |  mouse move       |     |  (chromatic      |
+|                  |     |                   |     |   aberration)    |
++------------------+     +-------------------+     +------------------+
+                                                          |
+         +------------------------------------------------+
+         |
+         v
++------------------+     +-------------------+
+|  Web Audio Init  |     |  Game Loop        |
+|  (on first click)|     |                   |
+|                  |     |  Click cell -->   |
+|  Oscillators --> |     |  Update state --> |
+|  Gain/Filter --> |     |  Check win -->    |
+|  Speakers        |     |  Re-render board  |
+|                  |     |  Win? Confetti!   |
++------------------+     +-------------------+
+                                  |
+                                  v
+                         +-------------------+
+                         |  Google Cloud Run |
+                         |                   |
+                         |  Docker container |
+                         |  Scales to zero   |
+                         |  Pay-per-request  |
+                         +-------------------+
+</pre>
+    </div>
+
+    <p>The server starts with Express, serving everything in the <code>public/</code> directory. When the browser loads the page, Three.js initializes a 3D scene with the tic-tac-toe board positioned in 3D space. Mouse move events feed into board rotation, creating the parallax tilt.</p>
+
+    <p>A canvas layer sits behind the game board, running the liquid background animation and cursor trail effects at 60fps via <code>requestAnimationFrame</code>. On the first user interaction (browsers require a gesture before playing audio), the generative soundscape starts.</p>
+
+    <p>The game loop is straightforward: player clicks a cell, state updates, UI re-renders, a win-check function scans rows, columns, and diagonals. If someone wins, confetti explodes and a victory sound triggers. For mobile, touch events map to the same handlers as mouse events.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Browser APIs are powerful.</strong> The modern browser can handle 3D graphics, generate audio, and process images at 60fps. You do not always need a native app.</li>
+        <li><strong>requestAnimationFrame is your animation heartbeat.</strong> Every smooth animation in the browser uses this function. It syncs with the browser's repaint cycle, pauses when tabs are hidden, and gives you a high-resolution timestamp.</li>
+        <li><strong>WebGL and Three.js fundamentals transfer.</strong> Scenes, cameras, renderers, meshes, materials, lights. This vocabulary carries directly to game development and AR/VR work.</li>
+        <li><strong>The Audio Context graph model is universal.</strong> Understanding signal routing (source to effect to destination) is how all audio software works.</li>
+        <li><strong>Canvas 2D rendering skills are versatile.</strong> Drawing shapes, clearing frames, compositing layers. The same skills power data visualizations, image editors, and browser games.</li>
+        <li><strong>Express.js patterns are bread and butter.</strong> Middleware, static file serving, route handling. These are the fundamentals of Node.js backend work.</li>
+        <li><strong>Cloud Run deployment is approachable.</strong> Containerizing and deploying a web app is a skill every developer needs, and Cloud Run removes most of the operational complexity.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Creative coding projects demonstrate technical range that CRUD apps simply cannot. Here are some interview questions this project prepares you for.</p>
+
+    <p><strong>Q: What is the difference between Canvas 2D and WebGL?</strong></p>
+    <p>Canvas 2D gives you a simple drawing API for rectangles, arcs, text, and images. WebGL gives you access to the GPU for hardware-accelerated 3D rendering. Three.js wraps WebGL so you do not have to write raw shader code. Use Canvas 2D for 2D effects. Use WebGL and Three.js when you need 3D or heavy parallel computation.</p>
+
+    <p><strong>Q: How does requestAnimationFrame differ from setInterval for animations?</strong></p>
+    <p><code>setInterval</code> fires at a fixed interval regardless of whether the browser is ready to repaint. <code>requestAnimationFrame</code> syncs with the browser's repaint cycle (usually 60fps), pauses when the tab is hidden, and gives you a high-resolution timestamp for smooth timing. Always use <code>requestAnimationFrame</code> for visual animations.</p>
+
+    <p><strong>Q: Explain the Web Audio API's node graph architecture.</strong></p>
+    <p>The Web Audio API models audio as a directed graph. You create an <code>AudioContext</code>, then build a chain of nodes: sources (oscillators, audio buffers) connect to processing nodes (gain, biquad filter, delay) which connect to the destination (speakers). Data flows through the graph in real time. This is exactly how hardware synthesizers and mixing boards work.</p>
+
+    <p><strong>Q: Why would you over-engineer a simple game?</strong></p>
+    <p>To learn. Absurd scope breeds breadth. By adding 3D, generative audio, canvas effects, and cloud deployment to a tic-tac-toe game, I touched more browser APIs in one project than most tutorials cover in a semester. The game is the excuse; the learning is the point.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>
+git clone https://github.com/tolani007/neon-tic-tac-toe.git
+cd neon-tic-tac-toe
+
+# Install dependencies
+npm install
+
+# Run the server
+node server.js
+
+# Open http://localhost:3000 in your browser
+    </pre>
+
+    <p>For deployment to Google Cloud Run:</p>
+    <pre>
+gcloud run deploy neon-tic-tac-toe --source . --allow-unauthenticated
+    </pre>
+
+    <p>Move your mouse around the board. Listen to the drone. Click a cell and feel the whole thing come alive. Then read the source code and see how each piece works. Explore the full project on <a href="https://github.com/tolani007/neon-tic-tac-toe">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Three.js / Creative Coding / Web Audio API / Node.js / JavaScript</p>
+
+</article>
+</body>
+</html>

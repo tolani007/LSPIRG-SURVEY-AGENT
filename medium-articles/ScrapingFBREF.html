@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How I Built an Ethical Web Scraper for Premier League Football Data | Tolani Akinola</title>
+    <meta name="description" content="Building a production-grade Python web scraper with BeautifulSoup, rate limiting, exponential backoff, and checkpoint recovery for football analytics.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="web scraping, Python, BeautifulSoup, rate limiting, data pipeline, football analytics">
+    <meta property="og:title" content="How I Built an Ethical Web Scraper for Premier League Football Data | Tolani Akinola">
+    <meta property="og:description" content="Building a production-grade Python web scraper with BeautifulSoup, rate limiting, exponential backoff, and checkpoint recovery for football analytics.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/ScrapingFBREF.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>How I Built an Ethical Web Scraper for Premier League Football Data</h1>
+    <p class="subtitle">Rate limiting, exponential backoff, checkpoint recovery, and a Flask UI: building a production-grade data pipeline from scratch with Python and BeautifulSoup.</p>
+    <p class="read-time">11 min read</p>
+
+    <p>Every data science interview will eventually ask you: "Where did your data come from?" If your answer is "I downloaded a Kaggle CSV," that is fine. But if your answer is "I built a production-grade scraper with rate limiting, exponential backoff, checkpoint recovery, and a web interface," now you are showing engineering maturity.</p>
+
+    <p>I needed Premier League match data for my predictive modeling project. Lots of it. Multiple seasons of shooting stats, passing stats, defensive stats, and possession stats. The best free source lives on FBref.com. But copying and pasting hundreds of tables by hand? That is not analytics. That is punishment.</p>
+
+    <p>So I built a scraper. Not a quick-and-dirty script, but a resilient data pipeline that respects the website, handles failures gracefully, and even has a browser-based UI. This project became the foundation for everything else in my sports analytics portfolio.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>If you want to do serious football analytics, you need data. The question is how you get it. I wanted a system that could pull multiple seasons of comprehensive statistics and package them into clean CSV files, ready for analysis or model training.</p>
+
+    <p>But I also wanted to build it the right way. That meant being polite to the server, handling every failure mode I could think of, and making it usable by someone who has never touched a command line. The result is a full ETL pipeline disguised as a web scraper.</p>
+
+    <h2>The Core Concepts</h2>
+
+    <p><strong>HTML Parsing with BeautifulSoup.</strong> HTML is a tree structure. Think of a family tree: the <code>&lt;html&gt;</code> tag is the great-grandparent, <code>&lt;body&gt;</code> is the grandparent, <code>&lt;div&gt;</code> tags are parents, and the actual data is the children. BeautifulSoup lets me navigate this tree. I can say "find the table with class 'stats_table'" and it goes straight to it, like knowing exactly which branch of the family tree holds the data I need.</p>
+
+    <pre><code>soup = BeautifulSoup(html_content, 'html.parser')
+table = soup.find('table', {'class': 'stats_table'})</code></pre>
+
+    <p>Two lines and I have grabbed a whole stats table.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The real engineering challenge is not parsing HTML. It is building a system that handles failures gracefully, respects the server, and can resume after interruption. The scraper itself is maybe 20% of the work. The resilience layer is the other 80%.
+    </div>
+
+    <p><strong>Rate Limiting.</strong> Imagine you are at a library and you keep asking the librarian for books, one after another, nonstop. Eventually she is going to get annoyed and kick you out. Websites work the same way. If you hit FBref with 100 requests per second, they will block your IP. Rate limiting means I deliberately slow down my requests. I am being polite. I am waiting my turn.</p>
+
+    <p><strong>Exponential Backoff.</strong> When the website says "slow down" (a 429 status code), I do not just wait a fixed amount of time. First retry: wait 2 seconds. Second retry: wait 4 seconds. Third retry: wait 8 seconds. Each time, I double the wait. This is an industry-standard pattern used in AWS SDKs, gRPC, and every serious retry library.</p>
+
+    <pre><code>for attempt in range(max_retries):
+    response = requests.get(url)
+    if response.status_code == 200:
+        break
+    wait_time = base_delay * (2 ** attempt)  # 2, 4, 8, 16...
+    time.sleep(wait_time)</code></pre>
+
+    <p><strong>Checkpoint Recovery.</strong> Imagine writing a 50-page paper and your computer crashes at page 47. Without saving, you start from scratch. With a checkpoint system, you pick up at page 47. My scraper saves its progress to <code>scraper_checkpoint.json</code> after each successful batch. If it crashes, gets rate-limited, or I just close my laptop, it knows exactly where to resume.</p>
+
+    <p><strong>Rotating User-Agent Headers.</strong> Every browser request includes a User-Agent string that identifies it. If a scraper sends the same ID every time, the website notices. Using <code>fake-useragent</code>, I rotate through different browser identities. One request looks like Chrome on Windows. The next looks like Firefox on Mac. It is about making my traffic look like normal, diverse web traffic.</p>
+
+    <h2>How It Works</h2>
+
+    <p>The whole project is really an ETL pipeline. Extract data from FBref via HTTP requests. Transform it from raw HTML into structured DataFrames using BeautifulSoup and pandas. Load the clean data into CSV files ready for downstream analysis.</p>
+
+    <div class="diagram">
+        <pre>
+  Configuration       Request Phase         Parsing Phase        Output
+  +------------+     +--------------+      +--------------+    +----------+
+  | Seasons    |     | HTTP GET     |      | BeautifulSoup|    | Clean    |
+  | Teams      | --> | + User-Agent | ---> | HTML -> Table| -> | CSV      |
+  | Stat Types |     | + Rate Limit |      | + pandas     |    | Files    |
+  +------------+     | + Backoff    |      +--------------+    +----------+
+                     +--------------+             |
+                           |                      v
+                     +--------------+      +--------------+
+                     | 429 / Error? |      | Checkpoint   |
+                     | Retry w/     |      | Save to JSON |
+                     | Backoff      |      +--------------+
+                     +--------------+
+        </pre>
+    </div>
+
+    <p>Between each request, the scraper waits. If it gets a 429 or 5xx error, exponential backoff kicks in. After each successful batch, it writes its current position to the checkpoint file. Individual team and season DataFrames get merged and concatenated into comprehensive datasets. And the Flask app wraps the whole process in a browser-friendly interface with real-time progress updates.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>HTTP fundamentals are essential.</strong> Status codes (200, 403, 429, 500), headers, request/response cycles. These are the backbone of the internet, and understanding them made me a better engineer across the board.</li>
+        <li><strong>Defensive programming saves you.</strong> What happens when things go wrong? Rate limits, connection timeouts, malformed HTML. My code handles all of it. This mindset transfers to every production system I have built since.</li>
+        <li><strong>ETL is a universal pattern.</strong> Extract, Transform, Load. This is the pattern behind every data engineering job. The scale changes, but the architecture stays the same. Replace HTTP requests with Kafka consumers, replace CSV with a data warehouse, and you have enterprise ETL.</li>
+        <li><strong>State management matters.</strong> The checkpoint system taught me to think about idempotency and crash recovery. These are the same concepts behind database transaction logs and ML training checkpoints.</li>
+        <li><strong>Respectful scraping is non-negotiable.</strong> Checking robots.txt, implementing rate limiting, and respecting terms of service. The ethics matter, both legally and professionally.</li>
+        <li><strong>Production-mindset coding is different.</strong> This is not a notebook experiment. It has error handling, logging, configuration, and a UI. That gap between "works in a notebook" and "works reliably" is where engineering maturity lives.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>This project covers topics that come up constantly in data engineering and backend interviews. Here are the questions it prepares you for:</p>
+
+    <p><strong>"How would you design a web scraper that needs to run reliably over hours?"</strong> Talk about the checkpoint system. Explain that any long-running process needs to be resumable. Mention idempotency: the ability to restart without duplicating work.</p>
+
+    <p><strong>"What is exponential backoff and when would you use it?"</strong> Explain the doubling wait pattern. Mention it is standard in distributed systems. The key insight: it prevents thundering herd problems where many clients retry simultaneously and overwhelm the server.</p>
+
+    <p><strong>"Describe an ETL pipeline you have built."</strong> Walk through Extract (HTTP requests to FBref), Transform (BeautifulSoup parsing, pandas cleaning), Load (CSV export). Mention that this pattern scales to enterprise systems.</p>
+
+    <p><strong>"How do you make a data pipeline fault-tolerant?"</strong> Checkpointing, retry logic with backoff, graceful error handling, and logging. The scraper can crash at any point and resume without data loss or duplication.</p>
+
+    <p><strong>"Tell me about a time you built something beyond a Jupyter notebook."</strong> This project has a Flask web UI, modular Python scripts, a checkpoint system, and handles real-world failure modes. It is production-adjacent, not just exploratory.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>Clone the repo and try it out. You can run the scraper directly from the command line or launch the Flask web UI.</p>
+
+    <pre><code>git clone https://github.com/tolani007/ScrapingFBREF.git
+cd ScrapingFBREF
+pip install -r requirements.txt
+
+# Run the scraper directly
+python fbref_scraper.py
+
+# Or launch the Flask web UI
+python app.py
+# Then open http://localhost:5000 in your browser</code></pre>
+
+    <p>The data this scraper produces feeds directly into my <a href="https://github.com/tolani007/EPL-WinPredictor">EPL-WinPredictor</a> project, where I engineer features and train ML models. Think of ScrapingFBREF as the kitchen where I source and prep the ingredients. EPL-WinPredictor is where I cook the meal.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Web Scraping / Python / Data Engineering / Football Analytics / BeautifulSoup</p>
+</article>
+</body>
+</html>

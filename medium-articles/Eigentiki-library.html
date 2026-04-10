@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building a Digital Library With React 19 and Tailwind CSS 4 | Tolani Akinola</title>
+    <meta name="description" content="I built a curated digital library with React 19, Tailwind CSS 4, TypeScript, and Vite to house the books and papers that shaped how I think.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="React 19, Tailwind CSS 4, TypeScript, web development, Vite, frontend engineering, component architecture, Wouter">
+    <meta property="og:title" content="Building a Digital Library With React 19 and Tailwind CSS 4 | Tolani Akinola">
+    <meta property="og:description" content="I built a curated digital library with React 19, Tailwind CSS 4, TypeScript, and Vite to house the books and papers that shaped how I think.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Eigentiki-library.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>Building a Digital Library With React 19 and Tailwind CSS 4</h1>
+    <p class="subtitle">Your reading list is a map of your mind. I decided to give mine a proper home.</p>
+    <p class="read-time">8 min read</p>
+
+    <p>I am a reader. Not the "I read a business book a month" kind. The kind who keeps a running list of papers, essays, and books that fundamentally changed how I see the world.</p>
+
+    <p>But that list was scattered across notes apps, bookmarks, and my memory. I wanted to give it a home. So I built the Eigentiki Library: a curated digital garden with an aesthetic I call "Ethereal Minimalism." Sage greens, soft creams, serif typography, and hover interactions that make browsing feel like wandering through a peaceful bookshop.</p>
+
+    <p>This is a full modern web application built with React 19, Tailwind CSS 4, TypeScript, Vite, and Wouter for routing. It has a client-server architecture, shared type definitions, a proper build pipeline, and a design system that is intentional down to the font choice. I chose every technology here for a reason, and each one represents the cutting edge of frontend development in 2025.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>Building something personal with modern tools teaches you those tools faster than any tutorial. When the project matters to you, you push through the frustrating parts. You care about the details. You ship something you are proud of.</p>
+
+    <p>And in an interview, when someone asks "Tell me about a project you are proud of," having a thoughtful answer that reveals your taste, your technical range, and your personality is worth more than ten CRUD apps.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> The skill of breaking a design into the right component boundaries is what separates a junior frontend developer from a senior one. This project is where I practiced that skill on something I genuinely cared about.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <p><strong>React 19.</strong> React 19 is the latest major release, and it changes how we think about several patterns. The big headlines include React Server Components (components that run on the server and send HTML to the client, reducing bundle size), the <code>use</code> hook (a new way to read promises and context inline), and improved automatic batching of state updates. Think of React 19 like upgrading from a manual transmission to automatic. The same engine, but the framework handles more of the shifting for you.</p>
+
+    <p><strong>Tailwind CSS 4.</strong> Tailwind is the "utility-first" approach to styling. Instead of writing CSS classes like <code>.card-header</code>, you write <code>class="text-2xl text-blue-500"</code> directly in your markup. It feels strange at first, like writing inline styles, but the breakthrough is consistency, responsiveness, and speed without context-switching to separate CSS files. Tailwind 4 brings a new engine built on Rust (Lightning CSS), automatic content detection, and native CSS cascade layers. It is dramatically faster to build with and faster to run.</p>
+
+    <div class="key-insight">
+        <strong>Key insight:</strong> Tailwind eliminates the naming problem. No more <code>.card-header-wrapper-inner</code>. It ensures design consistency through a constrained set of values for spacing, color, and typography. The trade-off is verbose HTML, but that HTML is searchable and explicit.
+    </div>
+
+    <p><strong>Vite Build System.</strong> Vite replaced Webpack for most modern frontend projects. Here is the analogy: Webpack is a factory that takes all your raw materials, processes everything, and produces one finished product. Every time you change one screw, the whole factory restarts. Vite is a workshop that only processes the piece you are working on right now. In development, it serves files directly using native ES modules, so startup is nearly instant. For production, it bundles with Rollup. Dev server starts in milliseconds, hot module replacement is instant, and the production build is optimized.</p>
+
+    <p><strong>TypeScript (96.8% of the codebase).</strong> TypeScript is JavaScript with a type system bolted on. Think of it like spell-check for your code. Without types, you might pass a string where a number is expected and only discover the bug at runtime. With TypeScript, the editor catches it as you type. The <code>shared/</code> directory is particularly important. It contains type definitions that both the client and server use, ensuring they always agree on data shapes.</p>
+
+    <p><strong>"Ethereal Minimalism" Design.</strong> The design is intentional. Sage greens and soft creams create visual calm. Playfair Display (a serif font) evokes the feeling of a physical book. Hover interactions add a layer of discovery, like running your finger along a bookshelf and feeling the spines. This is not just "make it pretty." It is design as communication. The aesthetics tell the visitor: this is a thoughtful, curated space.</p>
+
+    <p><strong>Wouter for Routing.</strong> Wouter is a tiny (1.5KB) routing library for React. React Router is powerful but heavy at 20KB+. Wouter gives you the same core features, URL-based page navigation without full page reloads, in a fraction of the size. Choosing the right-sized tool shows you understand trade-offs between capability and bundle size.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
++------------------------------------------------------------+
+|                      MONOREPO STRUCTURE                    |
++------------------------------------------------------------+
+|                                                            |
+|  client/                server/              shared/       |
+|  +----------------+    +----------------+   +-----------+  |
+|  |  React 19 App  |    |  Node.js API   |   | TypeScript|  |
+|  |                |    |                |   | Interfaces|  |
+|  |  Wouter routes |    |  Serves data   |   |           |  |
+|  |  BookCard.tsx  |    |  via HTTP      |   | Book {}   |  |
+|  |  BookGrid.tsx  |    |                |   | Author {} |  |
+|  |  Layout.tsx    |    |                |   | Tag {}    |  |
+|  +-------+--------+    +-------+--------+   +-----+-----+  |
+|          |                     |                  |         |
+|          +----------+----------+------------------+         |
+|                     |                                       |
++------------------------------------------------------------+
+                      |
+                      v
+              +---------------+
+              |     Vite      |
+              |               |
+              |  Dev: ES      |
+              |  modules,     |
+              |  instant HMR  |
+              |               |
+              |  Prod: Rollup |
+              |  bundle,      |
+              |  tree-shaken  |
+              +-------+-------+
+                      |
+                      v
+              +---------------+
+              |   Browser     |
+              |               |
+              |  Tailwind 4   |
+              |  styles       |
+              |               |
+              |  Client-side  |
+              |  routing      |
+              |               |
+              |  Hover        |
+              |  interactions |
+              +---------------+
+</pre>
+    </div>
+
+    <p>Running <code>npm run dev</code> fires up Vite, which serves the React app with hot module replacement. The browser receives the HTML shell, loads the JavaScript bundle, and React takes over rendering.</p>
+
+    <p>Clicking a link updates the URL and Wouter renders the matching component with no page reload. The book, paper, and essay data feeds into React components. Each item gets a <code>BookCard</code> with title, author, description, and hover interactions.</p>
+
+    <p>Every component uses Tailwind utility classes for layout, typography, colors, and responsive breakpoints. No separate CSS files to manage. The server provides the reading list data, and TypeScript interfaces in <code>shared/</code> ensure the data shape the server sends matches what the client expects. A type mismatch triggers a compile-time error, not a runtime crash.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>React 19 in practice.</strong> Building a real project with the latest React version taught me the new patterns firsthand, not from tutorials.</li>
+        <li><strong>Tailwind CSS 4 workflow.</strong> Utility-first CSS felt uncomfortable at first, but now I build UIs three times faster. The consistency it enforces is worth the learning curve.</li>
+        <li><strong>Vite as a build tool.</strong> Understanding how modern bundlers work (ES modules, HMR, tree shaking) makes you a better frontend engineer.</li>
+        <li><strong>TypeScript discipline.</strong> A 96.8% TypeScript codebase forced me to think about data shapes upfront. This catches bugs at compile time instead of production.</li>
+        <li><strong>Design as a skill.</strong> Choosing colors, typography, and interaction patterns is engineering. It requires the same systematic thinking as choosing data structures.</li>
+        <li><strong>Monorepo patterns.</strong> The client/server/shared structure is industry standard for full-stack TypeScript. Understanding it prepares you for real production codebases.</li>
+        <li><strong>Lightweight library choices.</strong> Choosing Wouter over React Router, Lucide over Font Awesome. These decisions show you understand trade-offs between features and bundle size.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Modern frontend development moves fast. Knowing the latest tools and being able to articulate why you chose them is a differentiator. Here are some interview questions this project prepares you for.</p>
+
+    <p><strong>Q: What is new in React 19, and how did you use it?</strong></p>
+    <p>React 19 introduces Server Components, the <code>use</code> hook, and improved automatic batching. Server Components let you run component logic on the server and send only the rendered HTML to the client, reducing bundle size. The <code>use</code> hook simplifies reading async data in components.</p>
+
+    <p><strong>Q: Why Tailwind CSS over traditional CSS or CSS-in-JS?</strong></p>
+    <p>Tailwind eliminates the naming problem, ensures design consistency through a constrained set of values, and keeps styles co-located with markup. The trade-off is verbose HTML, but that is searchable and explicit. Tailwind 4's Rust-based engine makes it the fastest styling solution available.</p>
+
+    <p><strong>Q: Explain how Vite works under the hood.</strong></p>
+    <p>In development, Vite serves files as native ES modules. When you import a file, the browser requests it, and Vite transforms it on the fly (TypeScript to JavaScript, JSX to React.createElement calls). No upfront bundling. In production, Vite uses Rollup to create an optimized, tree-shaken bundle with code splitting.</p>
+
+    <p><strong>Q: What is the benefit of a shared types directory in a full-stack TypeScript project?</strong></p>
+    <p>It is a contract between client and server. If the server changes the shape of a response, the shared type changes, and the client gets a compile-time error immediately. Without shared types, mismatches become runtime bugs that are hard to trace.</p>
+
+    <p><strong>Q: Why did you choose Wouter over React Router?</strong></p>
+    <p>React Router is 20KB+ and includes features I did not need (data loaders, form actions, nested route configurations). Wouter is 1.5KB and gives me URL-based component rendering, which is all a static content site needs. Choosing the right-sized tool shows you understand trade-offs between capability and performance.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>
+git clone https://github.com/tolani007/Eigentiki-library.git
+cd Eigentiki-library
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+
+# Open in your browser (Vite will show the URL, usually http://localhost:5173)
+    </pre>
+
+    <p>For production:</p>
+    <pre>
+npm run build
+npm run start
+    </pre>
+
+    <p>Browse the library. Hover over the cards. Notice the typography and the color palette. Then open the source and see how each component maps to what you see on screen. Explore the full project on <a href="https://github.com/tolani007/Eigentiki-library">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: React / Tailwind CSS / TypeScript / Web Development / Vite</p>
+
+</article>
+</body>
+</html>
