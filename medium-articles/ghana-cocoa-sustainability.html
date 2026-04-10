@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Data Investigation Into Cocoa Sustainability in Ghana | Tolani Akinola</title>
+    <meta name="description" content="I used Python and exploratory data analysis to investigate whether cocoa farming in Ghana can be both profitable and sustainable.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Data Science, Agriculture, Sustainability, Python, Economics, Cocoa, Ghana, EDA">
+    <meta property="og:title" content="A Data Investigation Into Cocoa Sustainability in Ghana | Tolani Akinola">
+    <meta property="og:description" content="I used Python and exploratory data analysis to investigate whether cocoa farming in Ghana can be both profitable and sustainable.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/ghana-cocoa-sustainability.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>A Data Investigation Into Cocoa Sustainability in Ghana</h1>
+    <p class="subtitle">The numbers tell a story that policy debates alone cannot. I used Python to find it.</p>
+    <p class="read-time">9 min read</p>
+
+    <p>Ghana is the world's second-largest cocoa producer. Cocoa is the backbone of rural life there. And yet, most of the farmers who grow it earn less than $2 a day.</p>
+
+    <p>That contradiction haunted me. Global chocolate demand keeps climbing, but yields per hectare are stagnating. Climate change is shifting the growing zones. Pressure to expand farmland is eating into forests the planet desperately needs.</p>
+
+    <p>So I did what any data person would do. I stopped debating and started analyzing. I gathered yield data, economic indicators, sustainability metrics, and climate variables, then built an exploratory data analysis that asks the hard questions most people skip.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>This is not just an agricultural problem. It is an economics problem, a climate problem, and a human welfare problem all tangled together. The only way to untangle those threads is with data.</p>
+
+    <p>I wanted to answer questions like: What drives yield variation across regions? What is the real relationship between yield and profitability? Can sustainable farming practices actually maintain or improve output?</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Domain-specific EDA on a real-world policy question is one of the most valuable skills you can demonstrate in an interview. It shows you can take a messy, multi-dimensional problem and turn it into actionable insight.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Agricultural Data Analysis</h3>
+
+    <p>Agricultural data is uniquely challenging. It is seasonal, geographically variable, and subject to external shocks like pest outbreaks and price crashes. Analyzing it means thinking about time series, spatial patterns, and confounding variables simultaneously.</p>
+
+    <p>Think of it like diagnosing why a student's grades vary. Is it the teacher? The subject? How much they slept? Cocoa yield depends on rainfall, soil nutrients, tree age, farming practices, pest management, and economic incentives. Teasing apart these factors is the analytical challenge.</p>
+
+    <h3>Sustainability Metrics</h3>
+
+    <p>I defined sustainability concretely with measurable indicators: yield per hectare, input costs versus revenue, deforestation rate, soil health, and farmer income. Moving from vague aspirations to measurable numbers is a skill that transfers to any domain.</p>
+
+    <h3>Economic Modeling</h3>
+
+    <p>I built simple but revealing economic models. Given current cocoa prices, input costs, and average yields, what is a farmer's net income per hectare? Then I ran scenarios. What if prices drop 20%? What if subsidies cut fertilizer costs by 30%? What if better practices boost yield by 15%?</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> Sensitivity analysis is incredibly powerful for policy discussions. Instead of arguing in the abstract, I can show exactly how many farmers cross the poverty line under each scenario. Data makes the invisible visible.
+    </div>
+
+    <h2>How It Works</h2>
+
+    <p>The pipeline follows a clear analytical flow from raw data to policy-ready recommendations.</p>
+
+    <div class="diagram">
+<pre>
+ RAW DATA SOURCES
+ +----------------+    +---------------+    +----------------+
+ | Yield Data     |    | Economic Data |    | Climate Data   |
+ | (regional,     |    | (prices,      |    | (rainfall,     |
+ |  national)     |    |  input costs, |    |  temperature,  |
+ +-------+--------+    |  farmer income|    |  soil health)  |
+         |              +-------+-------+    +-------+--------+
+         |                      |                    |
+         v                      v                    v
+ +-------+----------------------+--------------------+--------+
+ |                    DATA CLEANING                            |
+ |  Unit conversions, missing regions, source alignment        |
+ +----------------------------+--------------------------------+
+                              |
+              +---------------+----------------+
+              |               |                |
+              v               v                v
+       +-----------+   +-----------+   +---------------+
+       | Regional  |   | Time      |   | Economic      |
+       | Analysis  |   | Series    |   | Modeling      |
+       | (maps,    |   | (trends,  |   | (cost/revenue |
+       |  clusters)|   |  shifts)  |   |  scenarios)   |
+       +-----+-----+   +-----+-----+   +-------+-------+
+              |               |                 |
+              v               v                 v
+ +------------+---------------+-----------------+-------------+
+ |              SUSTAINABILITY ASSESSMENT                      |
+ |   Yield vs. deforestation, soil health, farmer income       |
+ +----------------------------+--------------------------------+
+                              |
+                              v
+ +----------------------------+--------------------------------+
+ |           POLICY RECOMMENDATIONS                            |
+ |  Training programs, targeted subsidies, shade-grown          |
+ |  incentives, pricing reform                                 |
+ +-------------------------------------------------------------+
+</pre>
+    </div>
+
+    <p>Data gathering comes first. I collect production data, economic indicators, and sustainability metrics from multiple sources. Then cleaning handles the mess: inconsistent reporting periods, unit conversions between metric tons and bags of cocoa, and missing regional data.</p>
+
+    <p>From there, I branch into three parallel analyses. Regional analysis maps yield by geography and overlays it with rainfall and soil data. Time series analysis plots yield trends over decades to spot inflection points. Economic analysis builds cost-revenue models and runs what-if scenarios.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>EDA is an art, not a checklist.</strong> Good exploratory analysis is driven by domain curiosity and hypothesis formation. Each analysis should answer a question or generate a new one.</li>
+        <li><strong>Context transforms numbers into meaning.</strong> A yield of 0.4 tons per hectare means nothing until you know the global average is 0.5 and the theoretical maximum is 2.0.</li>
+        <li><strong>Agricultural data is messy in unique ways.</strong> Seasonal patterns, geographic variation, inconsistent units, and data scarcity in rural regions create challenges that generic tutorials do not cover.</li>
+        <li><strong>Economic modeling does not require a PhD.</strong> Simple cost-revenue calculations and sensitivity analyses can generate powerful insights. The math is basic; the insight is sophisticated.</li>
+        <li><strong>Data storytelling matters.</strong> The most rigorous analysis is useless if you cannot communicate it clearly. I learned to structure notebooks as narratives with a clear question, evidence, and conclusion.</li>
+        <li><strong>Sustainability is quantifiable.</strong> Moving from vague aspirations to measurable indicators is a skill that transfers to any domain where "sustainability" is part of the conversation.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>If you are preparing for data science interviews, this kind of domain-specific EDA is gold. Here are the questions it prepares you for.</p>
+
+    <p><strong>Q: Walk me through an exploratory data analysis you conducted.</strong></p>
+    <p>Start with the business question: "What drives cocoa yield variation in Ghana?" Describe the data sources. Walk through distribution analysis, regional comparison, and correlation between yield and potential drivers. Share a key finding, like tree age and fertilizer access explaining more yield variation than climate variables. Emphasize how each step was hypothesis-driven.</p>
+
+    <p><strong>Q: How do you handle messy, real-world data?</strong></p>
+    <p>Profile the data first: check types, null rates, distributions, and cross-source consistency. For this project, I dealt with inconsistent units, missing regional data, and misaligned reporting periods. I document every cleaning decision and create validation checks to ensure cleaning does not introduce artifacts.</p>
+
+    <p><strong>Q: What is the difference between correlation and causation in agricultural data?</strong></p>
+    <p>Regions with higher rainfall might have higher yield. But is it the rainfall, or is it that wetter regions also have better soil and more investment? I handle this by controlling for confounding variables, looking for natural experiments, and being explicit about the limitations of observational data.</p>
+
+    <p><strong>Q: How do you communicate data findings to non-technical stakeholders?</strong></p>
+    <p>Lead with the insight, not the method. "Farmers in the Western region earn 30% less per hectare than the national average, primarily due to aging cocoa trees" is actionable. Always include a "so what" that tells the audience what to do with the information.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre><code>git clone https://github.com/tolani007/ghana-cocoa-sustainability.git
+cd ghana-cocoa-sustainability
+
+# Install dependencies
+pip install jupyter numpy pandas matplotlib seaborn
+
+# Open the analysis notebook
+jupyter notebook</code></pre>
+
+    <p>Follow the analysis flow: data loading, regional yield analysis, time series trends, economic modeling, sustainability assessment, and policy recommendations. The notebook is structured as a narrative you can follow step by step.</p>
+
+    <p>Explore the full project on <a href="https://github.com/tolani007/ghana-cocoa-sustainability">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Data Science / Agriculture / Sustainability / Python / Economics</p>
+
+</article>
+</body>
+</html>

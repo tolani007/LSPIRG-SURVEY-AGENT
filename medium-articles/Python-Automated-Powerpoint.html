@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automating PowerPoint With Python for My Little Sister | Tolani Akinola</title>
+    <meta name="description" content="I built a Python tool that generates PowerPoint presentations automatically, so my sister never has to format slides by hand again.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="Python, Automation, python-pptx, Scripting, Productivity, PowerPoint, Batch Processing">
+    <meta property="og:title" content="Automating PowerPoint With Python for My Little Sister">
+    <meta property="og:description" content="I built a Python tool that generates PowerPoint presentations automatically, so my sister never has to format slides by hand again.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Python-Automated-Powerpoint.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>Automating PowerPoint With Python for My Little Sister</h1>
+    <p class="subtitle">The best code you will ever write is code that makes someone you love say "wait, how did you do that?"</p>
+    <p class="read-time">8 min read</p>
+
+    <p>My sister was spending hours formatting PowerPoint slides by hand. The same layout, the same fonts, the same tedious adjustments, over and over again. I watched her do it one evening and thought: this is exactly the kind of problem Python was born to solve.</p>
+
+    <p>So I built her a tool. Five lines of Python, and suddenly she had a finished presentation. No clicking, no dragging, no fiddling with text boxes. Just content in, slides out.</p>
+
+    <p>This project is not complicated. But it taught me something important about engineering: the most valuable code is not the cleverest. It is the code that removes friction from someone's life.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to help my little sister, who is not so little anymore. She needed presentations regularly, and every single one involved the same manual steps. Format the title. Resize the text box. Adjust the font. Place the image. Repeat for thirty slides.</p>
+
+    <p>I recognized the pattern. If a human does the same sequence of steps more than twice, a computer should be doing it instead. That instinct is the core of automation thinking, and Python gives you the tools to act on it immediately.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The question is not "can I build a complex system?" The question is "can I see a problem in someone's life and build a tool to fix it?" That instinct separates developers who write code from developers who create value.
+    </div>
+
+    <h2>Core Concepts</h2>
+
+    <h3>python-pptx: Your PowerPoint Remote Control</h3>
+
+    <p>A PowerPoint file is actually a ZIP archive containing XML documents. The <code>python-pptx</code> library abstracts all of that away. You work with clean Python objects like <code>Presentation</code>, <code>Slide</code>, <code>Shape</code>, and <code>Placeholder</code>. No XML wrestling required.</p>
+
+    <p>Think of it this way: PowerPoint is a house, and <code>python-pptx</code> is the set of keys that lets Python walk in and rearrange the furniture.</p>
+
+    <pre><code>from pptx import Presentation
+from pptx.util import Inches, Pt
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "My Automated Slide"
+slide.placeholders[1].text = "This was generated by Python!"
+prs.save("output.pptx")</code></pre>
+
+    <p>Five lines. One finished presentation. Now imagine looping over a spreadsheet and generating fifty slides in under a second.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> PowerPoint, Excel, PDF, Word: they are all structured documents that Python can read and write. Once you understand this, an enormous space of automation possibilities opens up.
+    </div>
+
+    <h3>Template-Driven Design</h3>
+
+    <p>Instead of generating every pixel from scratch, a smart automation tool uses templates. You design one beautiful PowerPoint file with the right fonts, colors, and placeholder positions. Then Python fills in the content.</p>
+
+    <p>This separation of presentation and content is the same principle behind CSS and HTML, or behind the MVC architecture pattern. The template handles aesthetics. The script handles data.</p>
+
+    <h3>Batch Processing: Where the Real Power Lives</h3>
+
+    <p>One presentation? Sure, do it by hand. But weekly reports that follow the same format? A teacher generating progress slides for every student? A sales team customizing the same deck for each client?</p>
+
+    <p>That is batch processing. Define the template once, feed in the data, and generate all the outputs in a single run. Same concept behind mail merge, report generation, and continuous integration pipelines.</p>
+
+    <h3>Building for Non-Technical Users</h3>
+
+    <p>My sister is not a programmer. The interface cannot be "edit this Python script and run it in the terminal." It needs to read from an Excel file or a simple config. Clear error messages. Sensible defaults. Minimal setup.</p>
+
+    <p>This constraint forces you to think about user experience, even in a command-line tool. It is engineering empathy in action.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+        <pre>
+  [Content Source]        [Template .pptx]
+   (Excel / CSV)         (Fonts, Colors,
+                          Layouts)
+        |                      |
+        v                      v
+   +-------------------------------+
+   |        Python Script          |
+   |   (python-pptx engine)       |
+   |                               |
+   |  1. Load template             |
+   |  2. Read content data         |
+   |  3. For each row:             |
+   |     - Create slide            |
+   |     - Fill placeholders       |
+   |     - Apply formatting        |
+   |  4. Save output .pptx         |
+   +-------------------------------+
+                |
+                v
+       [Finished Presentation]
+        Ready to present!
+        </pre>
+    </div>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Python for automation is a superpower.</strong> The ability to script away repetitive tasks applies to DevOps, data engineering, QA, and everyday productivity. It is one of the highest-value skills you can develop.</li>
+        <li><strong>File formats are programmable.</strong> Once you realize that office documents are structured data under the hood, you stop seeing them as opaque files and start seeing them as APIs.</li>
+        <li><strong>User empathy shapes better tools.</strong> Building for a non-technical user forced me to think about input formats, error handling, and simplicity in ways that made the tool genuinely useful.</li>
+        <li><strong>Templates separate concerns.</strong> Separating design from content is a universal principle that shows up everywhere, from web development to report generation.</li>
+        <li><strong>MVPs beat grand plans.</strong> Shipping something small that solves a real problem is better than planning a complex system that never gets built. Start with five lines. Iterate from there.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>Automation skills come up in interviews constantly. Here are real questions you should be ready for:</p>
+
+    <p><strong>Q: Tell me about a time you used automation to solve a real problem.</strong></p>
+    <p>Walk through the story. My sister was spending hours on presentations. I recognized the repetitive pattern. I chose Python and <code>python-pptx</code>. I built a tool that generates presentations from data. The key is the problem-first approach: I did not start with "I want to use python-pptx." I started with "someone I care about is wasting time."</p>
+
+    <p><strong>Q: How would you design a tool for non-technical users?</strong></p>
+    <p>Minimize the technical surface area. Use familiar input formats like Excel or CSV. Provide clear instructions and error messages. Use sensible defaults so the user only configures what they need. Test with actual non-technical users.</p>
+
+    <p><strong>Q: What is python-pptx, and how does it work?</strong></p>
+    <p>It is a Python library for creating and modifying PowerPoint files. A <code>.pptx</code> file is a ZIP archive containing XML. The library abstracts this into Pythonic objects: Presentation, Slide, Shape, Placeholder. You add text, images, charts, and tables. It handles serialization for you.</p>
+
+    <p><strong>Q: How do you approach building an MVP?</strong></p>
+    <p>Start with the smallest version that solves the core problem. One script that takes a title and some bullet points and outputs a <code>.pptx</code> file. No batch mode, no templates, no GUI. Just the core value. Then iterate.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre><code># Clone the repo
+git clone https://github.com/tolani007/Python-Automated-Powerpoint-Presentation-for-my-little-sister-.git
+cd Python-Automated-Powerpoint-Presentation-for-my-little-sister-
+
+# Install the core dependency
+pip install python-pptx
+
+# Check the README for usage instructions as the project develops</code></pre>
+
+    <p>Explore the full project on <a href="https://github.com/tolani007/Python-Automated-Powerpoint-Presentation-for-my-little-sister-">GitHub</a>.</p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Python / Automation / python-pptx / Scripting / Productivity</p>
+</article>
+</body>
+</html>

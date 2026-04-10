@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Data Science Notebook: Transformers, PySpark, and Everything In Between | Tolani Akinola</title>
+    <meta name="description" content="34 Jupyter notebooks covering transformers, PySpark, loss functions, and more. Built with the Feynman technique to master data science from first principles.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="data science, transformers, attention mechanism, PySpark, machine learning, deep learning">
+    <meta property="og:title" content="My Data Science Notebook: Transformers, PySpark, and Everything In Between | Tolani Akinola">
+    <meta property="og:description" content="34 Jupyter notebooks covering transformers, PySpark, loss functions, and more. Built with the Feynman technique to master data science from first principles.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Fun-Data-Science-Content-from-Tiki.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+    <h1>My Data Science Notebook: Transformers, PySpark, and Everything In Between</h1>
+    <p class="subtitle">34 notebooks built with the Feynman technique. No copying textbooks. Just building every concept from scratch until I could explain it over coffee.</p>
+    <p class="read-time">12 min read</p>
+
+    <p>I have a confession. For the longest time, I could <em>use</em> PyTorch's attention module. I could import it, call it, and get results. But I could not explain what it was actually doing. Not really. Not well enough to survive a whiteboard interview or debug a model that refused to converge.</p>
+
+    <p>So I did something about it. I sat down and built the self-attention mechanism from raw matrix operations. No libraries. No shortcuts. Just numpy, math, and a stubborn refusal to move on until every number made sense.</p>
+
+    <p>That notebook became the first of 34. Together they form a mosaic of everything I have learned in data science, from transformers to PySpark, loss functions to entropy. Each one is written the way I wish someone had explained these ideas to me.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>The Feynman technique is simple: if you cannot explain something in plain language, you do not understand it. I took that literally. Every time I encountered a concept that felt fuzzy, I opened a fresh notebook and forced myself to build it from scratch, then write an explanation a friend could follow.</p>
+
+    <p>This is not a linear course. It is a personal collection. One notebook tears apart the Adam optimizer. Another walks through GRU gates. There is an entire "Math Gym" series where I drill convexity, gradients, entropy, and Jensen's inequality. PySpark projects sit alongside YOLO breakdowns and daily Deep ML challenges.</p>
+
+    <p>I built it for myself. But I wrote it as if I were teaching you.</p>
+
+    <h2>Core Concepts</h2>
+
+    <h3>Self-Attention and Transformers</h3>
+
+    <p>Here is the analogy that finally made attention click for me. Imagine you are at a party, and someone says: "The bank was steep near the river." Your brain automatically pays more <strong>attention</strong> to "river" to figure out that "bank" means a riverbank, not a financial institution.</p>
+
+    <p>That is self-attention. Each word in a sentence looks at every other word and decides how much to focus on it for understanding context.</p>
+
+    <p>Mechanically, every word gets three vectors: a Query ("what am I looking for?"), a Key ("what do I have to offer?"), and a Value ("what information do I carry?"). You compute how well each Query matches each Key using a dot product, scale the result, apply softmax to get attention weights, then use those weights to produce a weighted sum of Values.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The result is a new representation of each word that now "knows about" the rest of the sentence. In my notebook, I build this entire mechanism from raw matrix operations so you can trace exactly where each number comes from.
+    </div>
+
+    <h3>Loss Functions for Classification</h3>
+
+    <p>A loss function is how your model knows it is wrong. Think of it like a coach yelling louder when the player is further from the goal.</p>
+
+    <p><strong>Cross-entropy loss</strong> works like this: if your model is 99% confident of the correct answer, the loss is tiny. If it is 99% confident of the <em>wrong</em> answer, the loss is enormous. This asymmetry is what drives learning. My notebook covers binary cross-entropy, categorical cross-entropy, and focal loss, which focuses training on hard-to-classify examples.</p>
+
+    <h3>The Adam Optimizer</h3>
+
+    <p>Gradient descent is like rolling a ball downhill to find the lowest point in a valley. Basic gradient descent uses a fixed step size, which is clumsy. Too big and you overshoot. Too small and you take forever.</p>
+
+    <p><strong>Adam</strong> keeps a running average of past gradients (momentum, like the ball building up speed on a consistent slope) and a running average of past squared gradients (adaptive learning rates, adjusting step size based on how bumpy the terrain has been). The result is an optimizer that adapts to each parameter individually and converges faster.</p>
+
+    <h3>GRU Cells</h3>
+
+    <p>Think of a GRU like a note-taker with a smart eraser. As it reads a sequence, it decides at each step: "How much of what I remember should I keep?" (the update gate) and "How much of this new input should I blend in?" (the reset gate).</p>
+
+    <p>Unlike a basic RNN that just overwrites its memory at every step, a GRU can selectively remember long-term dependencies while still absorbing new information.</p>
+
+    <h3>PySpark and Distributed Computing</h3>
+
+    <p>Imagine you need to count every word in every book in a library. Alone, it takes years. But if you hand each shelf to a different volunteer and they all count simultaneously, then combine results, that is distributed computing.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> PySpark syntax looks like pandas, but under the hood, your data is spread across dozens of machines. My notebooks show the MapReduce paradigm in action: split the data, process in parallel, combine the results.
+    </div>
+
+    <h2>How It Works</h2>
+
+    <p>Each notebook is self-contained. You do not need to read them in order. Pick a concept and dive in. Here is how the collection is organized:</p>
+
+    <div class="diagram">
+<pre>
++---------------------+     +---------------------+     +---------------------+
+|   MATH GYM          |     |   DEEP LEARNING     |     |   ENGINEERING       |
+|                     |     |                     |     |                     |
+|  Convexity          |     |  Self-Attention     |     |  PySpark            |
+|  Gradients          |---->|  Transformers       |---->|  MapReduce          |
+|  Entropy            |     |  Adam Optimizer     |     |  SQL Patterns       |
+|  Jensen's Inequality|     |  GRU Cells          |     |  Distributed Data   |
+|                     |     |  YOLO Detection     |     |                     |
++---------------------+     +---------------------+     +---------------------+
+        |                           |                           |
+        v                           v                           v
++-----------------------------------------------------------------------+
+|                     DAILY DEEP ML CHALLENGES                          |
+|              Short drills that keep specific skills fresh              |
++-----------------------------------------------------------------------+
+</pre>
+    </div>
+
+    <p>The Transformer notebooks start with raw matrix math, then build up to single-head attention, multi-head attention, and finally a full encoder block. By the end, you can trace a token through the entire architecture.</p>
+
+    <p>Loss function notebooks start with intuition, show the math, implement from scratch, then validate against PyTorch's built-in implementations.</p>
+
+    <p>Math Gym notebooks are short, focused drills. Typically 30 to 50 lines of combined math and code, designed to be completed in one sitting.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>The Feynman technique works.</strong> If you cannot explain something simply, you do not understand it. Every notebook forced me to find the gap in my understanding and fill it.</li>
+        <li><strong>Implementation beats memorization.</strong> I did not truly understand attention until I built it with numpy. I did not truly understand Adam until I saw the bias correction fix early-step estimates. Build it yourself and the knowledge sticks.</li>
+        <li><strong>Math is not optional.</strong> You can use PyTorch without understanding gradients, but you cannot debug a model that refuses to converge without understanding them. The Math Gym made me genuinely dangerous.</li>
+        <li><strong>Distributed computing is a mindset.</strong> PySpark taught me to think about data in partitions, about operations that parallelize naturally versus ones that require shuffles, about the cost of moving data between machines.</li>
+        <li><strong>Breadth creates depth.</strong> By exploring transformers, sequence models, object detection, optimization, and statistics, I started seeing the same patterns everywhere. That cross-pollination is where real insight lives.</li>
+        <li><strong>Consistency beats intensity.</strong> The daily Deep ML challenges kept me sharp between big projects. Ten minutes a day beats ten hours once a month.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p>If you are preparing for ML interviews, these are the questions that come up over and over. Here is how working through these notebooks prepares you to answer them confidently.</p>
+
+    <p><strong>Q1: Explain the self-attention mechanism in transformers.</strong><br>
+    Walk through Query, Key, Value. Explain the dot product, softmax normalization, and weighted sum of Values. Mention scaling by the square root of dimension to prevent softmax saturation.</p>
+
+    <p><strong>Q2: Why does Adam work better than vanilla SGD in practice?</strong><br>
+    Adam combines momentum with adaptive learning rates and includes bias correction for early steps. Faster convergence, less sensitivity to hyperparameter tuning, and better performance on sparse gradients.</p>
+
+    <p><strong>Q3: What is the vanishing gradient problem, and how do GRUs address it?</strong><br>
+    In vanilla RNNs, gradients shrink toward zero through repeated multiplication during backpropagation. GRUs solve this with gates that create direct pathways for gradients to flow backward without repeated multiplication.</p>
+
+    <p><strong>Q4: Explain cross-entropy loss intuitively.</strong><br>
+    Cross-entropy measures how surprised your model is by the true answer. The logarithm creates an asymmetric penalty that punishes confident wrong answers much more than uncertain ones.</p>
+
+    <p><strong>Q5: When would you use PySpark over pandas?</strong><br>
+    Pandas is single-machine, in-memory. PySpark distributes data across a cluster. Reach for PySpark when data exceeds memory, when you need parallel processing for speed, or when the pipeline needs to run on a production cluster.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>The entire collection is open source. Clone it, pick a concept you want to strengthen, and work through the notebook.</p>
+
+<pre>
+git clone https://github.com/tolani007/Fun-Data-Science-Content-from-Tiki.git
+cd Fun-Data-Science-Content-from-Tiki
+
+# Recommended starting path:
+# 1. Start with a Math Gym notebook (convexity or gradients)
+# 2. Move to the Adam optimizer explanation
+# 3. Tackle the self-attention / transformer notebooks
+# 4. Explore PySpark and GRU at your own pace
+
+jupyter notebook
+</pre>
+
+    <p>You will need Python 3.8+, Jupyter, numpy, PyTorch (for some notebooks), and PySpark (for distributed computing notebooks).</p>
+
+    <p>Find the full repository here: <a href="https://github.com/tolani007/Fun-Data-Science-Content-from-Tiki">github.com/tolani007/Fun-Data-Science-Content-from-Tiki</a></p>
+
+    <hr>
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Data Science / Machine Learning / Transformers / PySpark / Deep Learning</p>
+</article>
+</body>
+</html>
