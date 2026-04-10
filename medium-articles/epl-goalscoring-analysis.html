@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Data Behind Premier League Goals: What Expected Goals Reveals About Elite Strikers | Tolani Akinola</title>
+    <meta name="description" content="A visual analysis of Premier League goalscoring metrics including xG, conversion rates, and shot accuracy that reveals what separates elite strikers from the rest.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="data visualization, expected goals, xG, football analytics, statistical analysis, Python, Premier League">
+    <meta property="og:title" content="The Data Behind Premier League Goals: What Expected Goals Reveals About Elite Strikers | Tolani Akinola">
+    <meta property="og:description" content="A visual analysis of Premier League goalscoring metrics that reveals what separates elite strikers from the rest.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/epl-goalscoring-analysis.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>The Data Behind Premier League Goals: What Expected Goals Reveals</h1>
+    <p class="subtitle">Goals win games. But understanding how, when, and where goals happen is what makes you a data scientist, not just a football fan.</p>
+    <p class="read-time">8 min read</p>
+
+    <p>A player scores 15 goals in a season. Is that good? It depends. If their expected goals (xG) was 10, they are overperforming, either incredibly clinical or riding a streak of luck. If their xG was 20, they are actually underperforming despite the highlight reel.</p>
+
+    <p>That single insight, the gap between actual goals and expected goals, tells you more about a striker than their raw goal count ever could. This project digs into that gap and a dozen other metrics to build a complete picture of Premier League attacking performance.</p>
+
+    <p>This is not just a football project. It is a masterclass in multi-dimensional comparison analysis. The same techniques apply to evaluating sales reps, marketing channels, manufacturing lines, or any scenario where you compare performance across many metrics simultaneously.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to practice visualization design under real constraints. When you have 15 metrics for 50 players, you cannot show everything at once. You have to make smart choices about what to show, how to show it, and what story to tell.</p>
+
+    <p>That is the same challenge every data analyst faces when building dashboards and reports for stakeholders who have five minutes of attention.</p>
+
+    <h2>The Core Concepts, Explained Simply</h2>
+
+    <p><strong>Expected Goals (xG).</strong> Every shot in football gets assigned a probability of being a goal based on historical data: distance from goal, angle, body part, game situation. A penalty might be 0.76 xG. A 30-yard shot might be 0.03 xG. Sum up all the xG for a player's shots and you get their "expected" output. The gap between actual and expected is where the real story lives.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> If 100 players shot from exactly the same position, xG tells you how many would score. Over a season, players who consistently beat their xG are either genuinely elite finishers or due for regression. Distinguishing between the two is the analyst's job.
+    </div>
+
+    <p><strong>Conversion Rate.</strong> Goals divided by shots. A 25% conversion rate is elite. A 5% rate means either bad luck or poor finishing. But context matters: if most shots come from distance, a low rate might be expected. This is why you never judge by a single metric.</p>
+
+    <p><strong>Shot Accuracy.</strong> Shots on target divided by total shots. Combined with conversion rate, you get the full picture. High accuracy plus low conversion means the goalkeeper is saving everything. High accuracy plus high conversion means a clinical finisher.</p>
+
+    <p><strong>Per-90 Normalization.</strong> A player who plays every minute has more opportunity to score than a substitute. Dividing by minutes played and multiplying by 90 gives you a fair "per full game" rate. The same concept applies in business: revenue per employee, cost per acquisition, tickets resolved per engineer.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Raw Metrics        Derived Metrics       Visualization Layer
+  +------------+     +----------------+    +------------------+
+  | Goals      |     | Conversion %   |    | Bar charts:      |
+  | Shots      | --> | xG over/under  | -> |  rankings        |
+  | xG         |     | Goals per 90   |    | Scatter plots:   |
+  | Minutes    |     | Shot accuracy  |    |  xG vs actual    |
+  | On-target  |     | Per-90 stats   |    | Grouped bars:    |
+  +------------+     +----------------+    |  multi-metric    |
+                                           +------------------+
+                                                   |
+                                              Narrative:
+                                           who is elite,
+                                           who is lucky,
+                                           who is underrated
+</pre>
+    </div>
+
+    <p><strong>Step 1:</strong> Collect Premier League attacker statistics: goals, shots, shots on target, xG, minutes played.</p>
+
+    <p><strong>Step 2:</strong> Compute derived metrics. Conversion rate, xG overperformance, goals per 90, shot accuracy.</p>
+
+    <p><strong>Step 3:</strong> Build comparison visualizations. Rank players by different metrics. The xG-vs-actual scatter plot is the centerpiece: the diagonal line represents performing exactly as expected, above means overperforming, below means underperforming.</p>
+
+    <p><strong>Step 4:</strong> Assemble the narrative. Who is the best finisher? Who is getting lucky? Who is underrated? Who needs better service from their teammates?</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>No single metric tells the whole story.</strong> Raw goals, goals per 90, xG, conversion rate, and qualitative context all matter together.</li>
+        <li><strong>Normalization makes comparisons fair.</strong> Per-90 stats are essential when players have different playing time.</li>
+        <li><strong>Visualization hierarchy matters.</strong> Start with the big picture, then drill into interesting questions. Do not dump 15 charts on the reader at once.</li>
+        <li><strong>The diagonal line is powerful.</strong> In any actual-vs-expected scatter plot, the diagonal instantly shows who overperforms and who underperforms.</li>
+        <li><strong>Context defeats metrics.</strong> A low conversion rate from a player who only shoots from outside the box is not the same as a low rate from a player who misses easy chances.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p><strong>"How do you approach multi-dimensional comparison analysis?"</strong> Start with one key metric to rank, then add dimensions one at a time. Use scatter plots for two dimensions, radar charts for many. The goal is insight, not information overload.</p>
+
+    <p><strong>"Explain a time you normalized data for fair comparison."</strong> Per-90 normalization is the perfect example. Same concept as revenue per employee or cost per acquisition. Different playing time means you cannot compare raw totals.</p>
+
+    <p><strong>"What is xG and how would you explain it to a non-technical person?"</strong> "Imagine every shot in football history from a certain position. If 100 players shot from there, how many would score? That percentage is xG."</p>
+
+    <p><strong>"How do you decide what to visualize vs. what to leave in a table?"</strong> Visualize patterns, relationships, and distributions. Use tables for precise numbers and reference lookups.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>git clone https://github.com/tolani007/epl-goalscoring-analysis-march-2023.git
+cd epl-goalscoring-analysis-march-2023</pre>
+
+    <p>Open the analysis files and explore the visualizations. View the full project on <a href="https://github.com/tolani007/epl-goalscoring-analysis-march-2023">GitHub</a>.</p>
+
+    <hr>
+
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Data Visualization / Football Analytics / Statistics / Python / xG</p>
+
+</article>
+</body>
+</html>

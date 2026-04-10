@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Premier League Dribbling Data Taught Me About Data Storytelling | Tolani Akinola</title>
+    <meta name="description" content="An exploratory data analysis of Premier League dribblers that taught me the most underrated skill in data science: turning numbers into stories that land.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="data analysis, EDA, data visualization, football analytics, data storytelling, pandas, matplotlib, Premier League">
+    <meta property="og:title" content="What Premier League Dribbling Data Taught Me About Data Storytelling | Tolani Akinola">
+    <meta property="og:description" content="An exploratory data analysis of Premier League dribblers that taught me the most underrated skill in data science: turning numbers into stories.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/epl-dribbling-analysis.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>What Premier League Dribbling Data Taught Me About Data Storytelling</h1>
+    <p class="subtitle">Any analyst can make bar charts. The ones who get hired are the ones who can look at data and tell a story that changes how you think.</p>
+    <p class="read-time">7 min read</p>
+
+    <p>"Player X averages 4.2 successful dribbles per game." That means nothing to most people. But "Player X beats their defender more often than any attacker in the league, and it is not even close" lands completely differently.</p>
+
+    <p>That is the difference between analysis and storytelling. I built this project to practice the most underrated skill in data science: taking raw football statistics and turning them into a narrative that even a casual fan could appreciate and learn from.</p>
+
+    <p>The techniques here are not football-specific. Every industry needs people who can look at data and craft an argument. Sales conversion rates, marketing channel performance, manufacturing defect patterns. The statistical methods are identical. Football just makes it fun.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I wanted to get better at Exploratory Data Analysis. In industry, you spend 60 to 70 percent of your time on EDA before touching any ML algorithm. Getting good at it means you move faster on everything that comes after.</p>
+
+    <p>I also wanted practice communicating technical findings to non-technical audiences. That is the skill that separates analysts who influence decisions from analysts who produce reports nobody reads.</p>
+
+    <h2>The Core Concepts, Explained Simply</h2>
+
+    <p><strong>Exploratory Data Analysis (EDA).</strong> Before you build a model, you need to understand your data. EDA is like a detective examining a scene before forming theories. You look at distributions, correlations, outliers, and missing values. You ask "what is weird?" and "what patterns jump out?" The dribbling dataset told stories I did not expect until I started exploring.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> EDA is not a checkbox you complete before modeling. It is where most real insights actually live. Many of the most valuable findings in this project came from exploration, not prediction.
+    </div>
+
+    <p><strong>Data Storytelling.</strong> Raw numbers do not convince anyone. Storytelling means arranging your analysis in a narrative arc: setup, tension, insight, conclusion. You lead with the interesting finding, show the evidence, address counterarguments, and end with a clear takeaway.</p>
+
+    <p><strong>Choosing the Right Visualization.</strong> Bar charts for comparisons. Scatter plots for relationships. Line charts for trends. Heatmaps for correlations. For dribbling analysis, I needed charts that showed both volume (how many dribbles attempted) and efficiency (what percentage succeeded). A scatter plot with those two axes instantly reveals which players are both prolific and effective.</p>
+
+    <p><strong>Domain Context.</strong> Dribbling in football is not just "running past someone." There are progressive dribbles that advance the ball, final-third dribbles that create chances, and defensive dribbles that relieve pressure. Understanding these distinctions is what separates a data scientist from a chart-maker.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Raw Stats           EDA Process            Data Story
+  +-----------+      +----------------+      +---------------+
+  | Dribbles  |      | 1. Univariate  |      | Setup:        |
+  | Attempts  | ---> |    (each stat) | ---> |  "Who are the |
+  | Success % |      | 2. Bivariate   |      |   best?"      |
+  | Zone data |      |    (X vs Y)    |      | Tension:      |
+  | Per-game  |      | 3. Hypotheses  |      |  "Surprising  |
+  +-----------+      | 4. Visualize   |      |   findings"   |
+                     +----------------+      | Insight:      |
+                                             |  "Here is why"|
+                                             +---------------+
+</pre>
+    </div>
+
+    <p><strong>Step 1: Univariate analysis.</strong> Look at each metric individually. What is the distribution of dribble attempts across the league? Who are the outliers?</p>
+
+    <p><strong>Step 2: Bivariate analysis.</strong> Plot metrics against each other. Are high-volume dribblers less efficient? Does dribbling translate to goals and assists?</p>
+
+    <p><strong>Step 3: Narrative construction.</strong> Arrange findings into a story. Start with the big picture, zoom into surprises, highlight standout players, end with insights.</p>
+
+    <p><strong>Step 4: Visualization design.</strong> Every chart makes one clear point. Proper titles, labels, annotations, and color choices.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Lead with the insight, not the method.</strong> Nobody cares that you used a scatter plot. They care about the pattern it reveals.</li>
+        <li><strong>One chart, one point.</strong> If your visualization needs a paragraph of explanation, it is too complex.</li>
+        <li><strong>Domain knowledge transforms analysis.</strong> Understanding different types of dribbles turned a generic stats project into a meaningful football story.</li>
+        <li><strong>Outliers are stories.</strong> The most interesting insights often come from asking "why is this data point so different from the rest?"</li>
+        <li><strong>EDA is not a warmup. It is the main event.</strong> Most real-world value comes from exploration, not prediction.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p><strong>"Walk me through your EDA process."</strong> Start with shape, check data types and missing values, compute summary statistics, visualize distributions, find correlations, identify outliers, form hypotheses, test with targeted charts. Use this project as your concrete example.</p>
+
+    <p><strong>"How do you choose the right visualization?"</strong> Comparison = bar chart. Relationship = scatter. Distribution = histogram. Trend = line. Explain each choice you made in this project and why.</p>
+
+    <p><strong>"How do you communicate findings to non-technical stakeholders?"</strong> This entire project is the answer. Lead with the insight, use analogies, let visualizations do the heavy lifting, end with "so what does this mean for us."</p>
+
+    <p><strong>"Tell me about an unexpected insight you found in data."</strong> Share a specific finding from this analysis. The specificity is what makes your answer memorable in an interview.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <pre>git clone https://github.com/tolani007/epl-dribbbling-analysis.git
+cd epl-dribbbling-analysis</pre>
+
+    <p>Open the analysis files and explore the data story. View the full project on <a href="https://github.com/tolani007/epl-dribbbling-analysis">GitHub</a>.</p>
+
+    <hr>
+
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Data Analysis / Data Visualization / Football Analytics / Python / Storytelling</p>
+
+</article>
+</body>
+</html>

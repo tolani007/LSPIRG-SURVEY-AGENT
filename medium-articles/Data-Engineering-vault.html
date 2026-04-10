@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5 Data Engineering Challenges That Taught Me More Than Any Online Course | Tolani Akinola</title>
+    <meta name="description" content="Real data engineering challenges across retail, healthcare, finance, and food service that taught me ETL pipelines, data modeling, and production-grade thinking.">
+    <meta name="author" content="Tolani Akinola">
+    <meta name="keywords" content="data engineering, ETL, data pipelines, SQL, Python, data modeling, interview prep, data quality">
+    <meta property="og:title" content="5 Data Engineering Challenges That Taught Me More Than Any Online Course | Tolani Akinola">
+    <meta property="og:description" content="Real data engineering challenges across retail, healthcare, finance, and food service that taught me ETL pipelines, data modeling, and production-grade thinking.">
+    <meta property="og:type" content="article">
+    <meta property="og:author" content="Tolani Akinola">
+    <link rel="canonical" href="https://tolani007.github.io/LSPIRG-SURVEY-AGENT/medium-articles/Data-Engineering-vault.html">
+    <style>
+        body { max-width: 680px; margin: 40px auto; padding: 0 20px; font-family: Georgia, 'Times New Roman', serif; line-height: 1.9; color: #292929; font-size: 18px; }
+        h1 { font-size: 2.2em; line-height: 1.2; margin-bottom: 8px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        h2 { font-size: 1.4em; margin-top: 2.2em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .subtitle { font-size: 1.25em; color: #757575; margin-top: 0; line-height: 1.5; }
+        blockquote { border-left: 3px solid #292929; padding-left: 20px; font-style: italic; color: #555; margin: 1.5em 0; }
+        pre { background: #f5f5f5; padding: 20px; overflow-x: auto; border-radius: 4px; font-size: 14px; line-height: 1.6; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 16px; }
+        .diagram { background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; margin: 1.5em 0; border-radius: 6px; text-align: center; }
+        .diagram pre { background: none; border: none; text-align: left; display: inline-block; }
+        .key-insight { background: #f9f9f9; border-left: 4px solid #1a8917; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 4px 4px 0; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .social-links img { height: 32px; }
+        hr { margin: 2.5em 0; border: none; border-top: 1px solid #e0e0e0; }
+        a { color: #1a8917; }
+        .tags { margin-top: 2em; color: #757575; font-size: 14px; }
+        .read-time { color: #757575; font-size: 14px; margin-bottom: 2em; }
+    </style>
+</head>
+<body>
+<article>
+
+    <h1>5 Data Engineering Challenges That Taught Me More Than Any Online Course</h1>
+    <p class="subtitle">Real ETL pipelines, real data quality nightmares, and real domain knowledge across retail, healthcare, finance, and food service.</p>
+    <p class="read-time">9 min read</p>
+
+    <p>Data engineering interviews ask you to design pipelines and model data. Most courses give you toy examples that fall apart the moment you meet messy, real-world data. So I started collecting real challenges and solving them end to end.</p>
+
+    <p>Each challenge lives in a different industry. Brazilian retail analytics. Healthcare data pipelines. Credit risk scoring. Food service operations. ETL pipeline craftsmanship. Five different domains, five different sets of constraints, and five different lessons that no textbook ever taught me.</p>
+
+    <p>This vault is my data engineering gym. And if you work through it, it will become yours too.</p>
+
+    <h2>Why I Built This</h2>
+
+    <p>I kept hitting the same wall in interviews. They would ask, "Tell me about a pipeline you built." And I would describe something clean and theoretical. The interviewer would nod politely and move on.</p>
+
+    <p>Then I started solving messy, real problems. The Boticario challenge forced me to handle Brazilian formatting conventions where commas are decimals and dots are thousands separators. The Home Credit project taught me how banks actually think about default prediction. The Privia Health challenge introduced me to HIPAA considerations and irregular medical timestamps.</p>
+
+    <p>After solving these, my interview answers got specific. I could say, "When I built the retail ETL pipeline, I caught a localization bug in the Transform step that would have silently corrupted every downstream calculation." That specificity is what separates candidates who get offers from candidates who do not.</p>
+
+    <h2>The Core Concepts, Explained Simply</h2>
+
+    <p><strong>ETL (Extract, Transform, Load).</strong> Imagine you are moving apartments. First, you extract everything from the old place. Then you transform: sort through it, throw away what is broken, organize what is left. Finally, you load it into the new apartment in the right rooms. Every challenge in this vault follows that pattern. The art is in the Transform step, because that is where domain knowledge lives.</p>
+
+    <div class="key-insight">
+        <strong>Key Insight:</strong> The Transform step is where junior engineers stumble most. It is not just cleaning nulls. It is understanding why a negative quantity makes no sense in a retail context, or why a date from 1900 in a healthcare system is actually a placeholder, not a real date.
+    </div>
+
+    <p><strong>Data Modeling.</strong> Data modeling is like designing a floor plan before building a house. If you put the bathroom where the kitchen should be, everything downstream breaks. Should you use a flat table or a star schema? The answer depends on who queries it, how fast they need results, and whether storage cost matters. That decision-making process is exactly what interviewers want to see.</p>
+
+    <p><strong>Data Quality.</strong> The pipeline that moves data is only as good as the data it moves. I build quality gates at every stage: schema validation on ingest, null and range checks during transformation, row-count reconciliation after load. In the Boticario challenge, one missed formatting convention would have corrupted every calculation silently.</p>
+
+    <p><strong>Idempotency.</strong> An idempotent pipeline produces the same result whether you run it once or ten times. Pipelines fail. Servers crash. When you retry, you do not want duplicate rows. I design for this using upserts, date-partitioned loads, and self-contained runs. Think of it like a light switch: flipping it once or five times still results in the light being on.</p>
+
+    <h2>How It Works</h2>
+
+    <div class="diagram">
+<pre>
+  Challenge Folder          ETL Pipeline              Output
+  +----------------+       +------------------+      +-------------+
+  | Raw Data       |       | Extract          |      | Clean CSV   |
+  | (CSV, JSON,    | ----> | (read + validate)|----> | Star Schema |
+  |  API response) |       | Transform        |      | Dashboard   |
+  |                |       | (clean + enrich) |      | Report      |
+  +----------------+       | Load             |      +-------------+
+                            | (write + verify) |
+                            +------------------+
+                                    |
+                            Quality Gates at
+                            every stage
+</pre>
+    </div>
+
+    <p><strong>1. Boticario BR Challenge:</strong> Brazilian retail analytics. Handle locale-specific number formatting, seasonal sales patterns, and promotional cycles. The key lesson: never assume your data uses the same formatting conventions you are used to.</p>
+
+    <p><strong>2. Home Credit Risk Engine:</strong> Financial credit risk modeling. Design a schema that captures applicant demographics, loan terms, and payment history. The key lesson: data modeling decisions have downstream consequences that compound.</p>
+
+    <p><strong>3. Privia Health Challenge:</strong> Healthcare data pipeline with privacy constraints. Handle irregular timestamps, medical codes (ICD-10), and HIPAA considerations. The key lesson: domain-specific rules are not optional, they are the pipeline.</p>
+
+    <p><strong>4. Prospa ETL Challenge:</strong> Pure pipeline craftsmanship. Extract from multiple sources, transform with business logic, load into a clean warehouse. The key lesson: idempotency is not academic. It saves you at 2 AM when the pipeline fails halfway through.</p>
+
+    <p><strong>5. Gordon Food Service Drill:</strong> Speed round. Solve a data problem under pressure, exactly the way you would in an interview. The key lesson: you can not bluff your way through a live coding challenge. You either know SQL window functions or you do not.</p>
+
+    <h2>What I Learned</h2>
+
+    <ol>
+        <li><strong>Domain knowledge is half the battle.</strong> You do not need to be a doctor to work with healthcare data, but you need to ask the right questions fast.</li>
+        <li><strong>SQL is a first-class citizen.</strong> Window functions, CTEs, self-joins, and pivoting are how you answer real business questions without spinning up a Spark cluster.</li>
+        <li><strong>Quality gates are non-negotiable.</strong> Schema validation on ingest, null checks during transform, row-count reconciliation after load.</li>
+        <li><strong>Idempotency saves you at 2 AM.</strong> Design every pipeline so that retrying it does not create duplicates.</li>
+        <li><strong>Documentation is part of the deliverable.</strong> Every decision I documented in these notebooks made the solution more valuable.</li>
+    </ol>
+
+    <h2>Why This Matters for Your Career</h2>
+
+    <p><strong>"Walk me through an ETL pipeline you built."</strong> Pick any challenge from this vault. Describe the source data, the quality issues you found, the transformation logic, and the output schema. Mention specific bugs you caught, like the Brazilian formatting issue.</p>
+
+    <p><strong>"How do you ensure data quality?"</strong> Describe your three-layer approach: schema validation on ingest, business rule checks during transform, reconciliation counts after load. Give a concrete example from the Privia Health challenge.</p>
+
+    <p><strong>"Star schema or flat table?"</strong> Explain the tradeoffs. Star schema gives you query flexibility and normalization. Flat tables are simpler and faster for single-use analytics. Reference the Home Credit project where this decision directly impacted query performance.</p>
+
+    <p><strong>"How do you handle pipeline failures?"</strong> Talk about idempotency, checkpoint files, partitioned loads, and upserts. Explain how the Prospa challenge taught you to design for failure recovery.</p>
+
+    <p><strong>"Tell me about a time you worked with unfamiliar domain data."</strong> Any of these challenges qualifies. The healthcare data had ICD-10 codes you had never seen. The retail data had formatting you did not expect. Walk through how you quickly learned enough domain context to build a correct pipeline.</p>
+
+    <h2>Try It Yourself</h2>
+
+    <p>Clone the repo and pick any challenge folder. Each one is self-contained with its own data, notebooks, and solution.</p>
+
+    <pre>git clone https://github.com/tolani007/Data-Engineering-vault.git
+cd Data-Engineering-vault
+jupyter notebook</pre>
+
+    <p>Start with the Gordon Food Service drill if you want something fast. Try the Home Credit risk engine if you want something deep. View the full project on <a href="https://github.com/tolani007/Data-Engineering-vault">GitHub</a>.</p>
+
+    <hr>
+
+    <h2>About the Author</h2>
+    <p>I am Tolani Akinola, also known as Eigentiki. I build at the intersection of machine learning, data engineering, systems programming, and creative tech. I believe the best way to learn anything is to build it, break it, and then explain it to someone else as simply as possible.</p>
+    <p>Find this project and all my work on GitHub. Let us connect:</p>
+    <div class="social-links">
+        <a href="https://x.com/tolaniakinola_"><img src="https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+        <a href="https://www.instagram.com/tolaniakinola/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+        <a href="https://github.com/tolani007"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+        <a href="https://www.linkedin.com/in/tolani-akinola/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+    </div>
+    <p class="tags">Tags: Data Engineering / ETL / SQL / Python / Data Pipelines</p>
+
+</article>
+</body>
+</html>
